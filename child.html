@@ -22,9 +22,11 @@ button:disabled{opacity:.6;cursor:default}
 .stats{display:flex;gap:12px}
 .stat{flex:1;background:#f2f4ff;padding:18px 8px;border-radius:16px;text-align:center}
 .stat strong{display:block;font-size:28px;margin-top:7px}
-.task{padding:17px;border:1px solid #e8ebf3;border-radius:15px;margin:12px 0}
-.task-title{font-weight:bold;font-size:17px}
+.task{padding:17px;border:1px solid #e8ebf3;border-radius:18px;margin:16px 0;overflow:hidden}
+.task-image{width:100%;max-height:320px;aspect-ratio:1.15;object-fit:contain;display:block;margin:0 auto 16px;border-radius:14px;background:#f7f8fc}
+.task-title{font-weight:bold;font-size:19px}
 .task-info{color:#68738c;font-size:14px;margin-top:8px}
+.task-description{line-height:1.5;color:#45516b}
 .task button{margin-top:14px;background:#26945b}
 .task button:disabled{background:#8992a8}
 .message{margin-top:14px;text-align:center;color:#c0392b}
@@ -177,6 +179,21 @@ async function loadDashboard(token){
       const item = document.createElement("div");
       item.className = "task";
 
+      // Vis opgavens GIF eller billede
+      if(task.image_url){
+        const image = document.createElement("img");
+        image.className = "task-image";
+        image.src = task.image_url;
+        image.alt = "Sådan udfører du opgaven: " + task.title;
+        image.loading = "lazy";
+
+        image.onerror = () => {
+          image.remove();
+        };
+
+        item.appendChild(image);
+      }
+
       const title = document.createElement("div");
       title.className = "task-title";
       title.textContent = task.title;
@@ -189,6 +206,7 @@ async function loadDashboard(token){
 
       if(task.description){
         const description = document.createElement("p");
+        description.className = "task-description";
         description.textContent = task.description;
         item.appendChild(description);
       }
