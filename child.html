@@ -7,71 +7,28 @@
 <title>FamilyTasks – Børneside</title>
 <style>
 *{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#f3f6fc;
-  color:#202b45;
-}
-header{
-  background:#fff;
-  padding:20px;
-  text-align:center;
-  box-shadow:0 2px 12px #0000000b;
-}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f6fc;color:#202b45}
+header{background:#fff;padding:20px;text-align:center;box-shadow:0 2px 12px #0000000b}
 .logo{font-size:25px;font-weight:800;color:#5268db}
 main{max-width:650px;margin:30px auto;padding:16px}
-.card{
-  background:white;
-  border-radius:22px;
-  padding:25px;
-  margin-bottom:18px;
-  box-shadow:0 5px 22px #26345b0d;
-}
+.card{background:white;border-radius:22px;padding:25px;margin-bottom:18px;box-shadow:0 5px 22px #26345b0d}
 .center{text-align:center}
 .avatar{font-size:65px;margin:10px}
 h1{font-size:27px;margin:10px 0}
 h2{font-size:21px;margin-top:0}
-input{
-  width:100%;
-  padding:17px;
-  border:2px solid #e1e5ef;
-  border-radius:14px;
-  font-size:24px;
-  text-align:center;
-  letter-spacing:10px;
-  margin:15px 0;
-}
-button{
-  width:100%;
-  padding:16px;
-  border:0;
-  border-radius:14px;
-  background:#5268db;
-  color:white;
-  font-size:17px;
-  font-weight:bold;
-  cursor:pointer;
-}
-button:disabled{opacity:.6}
+input{width:100%;padding:17px;border:2px solid #e1e5ef;border-radius:14px;font-size:24px;text-align:center;letter-spacing:10px;margin:15px 0}
+button{width:100%;padding:16px;border:0;border-radius:14px;background:#5268db;color:white;font-size:17px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.6;cursor:default}
 .stats{display:flex;gap:12px}
-.stat{
-  flex:1;
-  background:#f2f4ff;
-  padding:18px 8px;
-  border-radius:16px;
-  text-align:center;
-}
+.stat{flex:1;background:#f2f4ff;padding:18px 8px;border-radius:16px;text-align:center}
 .stat strong{display:block;font-size:28px;margin-top:7px}
-.task{
-  padding:17px;
-  border:1px solid #e8ebf3;
-  border-radius:15px;
-  margin:12px 0;
-}
+.task{padding:17px;border:1px solid #e8ebf3;border-radius:15px;margin:12px 0}
 .task-title{font-weight:bold;font-size:17px}
 .task-info{color:#68738c;font-size:14px;margin-top:8px}
+.task button{margin-top:14px;background:#26945b}
+.task button:disabled{background:#8992a8}
 .message{margin-top:14px;text-align:center;color:#c0392b}
+#pageMessage{color:#26945b;font-weight:bold}
 .hidden{display:none}
 .small{font-size:13px;color:#778099}
 </style>
@@ -87,14 +44,8 @@ button:disabled{opacity:.6}
     <div class="avatar">👋</div>
     <h1>Hej!</h1>
     <p>Indtast din 4-cifrede kode for at komme ind.</p>
-    <input
-      id="pin"
-      type="password"
-      inputmode="numeric"
-      maxlength="4"
-      placeholder="••••"
-      autocomplete="off"
-    >
+    <input id="pin" type="password" inputmode="numeric"
+      maxlength="4" placeholder="••••" autocomplete="off">
     <button id="loginButton">Log ind</button>
     <div class="message" id="loginMessage"></div>
   </section>
@@ -126,9 +77,7 @@ button:disabled{opacity:.6}
 
     <button id="refreshButton">Opdater mine opgaver</button>
     <br><br>
-    <button id="logoutButton" style="background:#8992a8">
-      Log ud
-    </button>
+    <button id="logoutButton" style="background:#8992a8">Log ud</button>
   </section>
 
   <p class="message" id="pageMessage"></p>
@@ -175,6 +124,35 @@ async function callFunction(name, body){
   return data;
 }
 
+async function submitTask(taskId, button){
+  const token = sessionStorage.getItem("familytasks_token_" + childId);
+  if(!token) return;
+
+  button.disabled = true;
+  button.textContent = "Sender...";
+
+  try{
+    const result = await callFunction("child-submit-task", {
+      token: token,
+      task_id: taskId
+    });
+
+    if(!result.success){
+      throw new Error(result.message || "Opgaven kunne ikke registreres.");
+    }
+
+    await loadDashboard(token);
+
+    document.getElementById("pageMessage").textContent =
+      result.message || "Opgaven er registreret!";
+
+  }catch(error){
+    document.getElementById("pageMessage").textContent = error.message;
+    button.disabled = false;
+    button.textContent = "Jeg har udført opgaven";
+  }
+}
+
 async function loadDashboard(token){
   const data = await callFunction("child-dashboard",{token});
 
@@ -182,17 +160,10 @@ async function loadDashboard(token){
     throw new Error(data.message || "Sessionen er udløbet.");
   }
 
-  document.getElementById("childName").textContent =
-    data.child.name;
-
-  document.getElementById("avatar").textContent =
-    data.child.avatar_url || "😊";
-
-  document.getElementById("stars").textContent =
-    data.stars ?? 0;
-
-  document.getElementById("points").textContent =
-    data.points ?? 0;
+  document.getElementById("childName").textContent = data.child.name;
+  document.getElementById("avatar").textContent = data.child.avatar_url || "😊";
+  document.getElementById("stars").textContent = data.stars ?? 0;
+  document.getElementById("points").textContent = data.points ?? 0;
 
   const taskList = document.getElementById("taskList");
   taskList.replaceChildren();
@@ -212,8 +183,7 @@ async function loadDashboard(token){
 
       const info = document.createElement("div");
       info.className = "task-info";
-      info.textContent =
-        `⭐ ${task.stars} stjerner · 🏆 ${task.points} point`;
+      info.textContent = `⭐ ${task.stars} stjerner · 🏆 ${task.points} point`;
 
       item.append(title,info);
 
@@ -225,9 +195,15 @@ async function loadDashboard(token){
 
       if(task.completed_today){
         const done = document.createElement("div");
-        done.textContent = "✓ Udført i dag";
+        done.textContent = "✓ Registreret i dag";
         done.style.color = "#26945b";
+        done.style.marginTop = "12px";
         item.appendChild(done);
+      } else {
+        const button = document.createElement("button");
+        button.textContent = "Jeg har udført opgaven";
+        button.addEventListener("click", () => submitTask(task.id, button));
+        item.appendChild(button);
       }
 
       taskList.appendChild(item);
@@ -236,7 +212,6 @@ async function loadDashboard(token){
 
   loginCard.classList.add("hidden");
   dashboard.classList.remove("hidden");
-  document.getElementById("pageMessage").textContent = "";
 }
 
 loginButton.addEventListener("click", async () => {
@@ -266,11 +241,7 @@ loginButton.addEventListener("click", async () => {
       throw new Error(data.message || "Forkert PIN.");
     }
 
-    sessionStorage.setItem(
-      "familytasks_token_" + childId,
-      data.token
-    );
-
+    sessionStorage.setItem("familytasks_token_" + childId, data.token);
     pinInput.value = "";
     await loadDashboard(data.token);
 
@@ -288,6 +259,7 @@ document.getElementById("refreshButton").addEventListener("click",async()=>{
 
   try{
     await loadDashboard(token);
+    document.getElementById("pageMessage").textContent = "";
   }catch(error){
     document.getElementById("pageMessage").textContent = error.message;
   }
@@ -299,6 +271,7 @@ document.getElementById("logoutButton").addEventListener("click",()=>{
   loginCard.classList.remove("hidden");
   pinInput.value = "";
   showError("");
+  document.getElementById("pageMessage").textContent = "";
 });
 
 pinInput.addEventListener("keydown",event=>{
