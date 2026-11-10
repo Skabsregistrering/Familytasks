@@ -1,0 +1,330 @@
+
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FamilyTasks – Børneside</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f3f6fc;
+  color:#202b45;
+}
+header{
+  background:#fff;
+  padding:20px;
+  text-align:center;
+  box-shadow:0 2px 12px #0000000b;
+}
+.logo{font-size:25px;font-weight:800;color:#5268db}
+main{max-width:650px;margin:30px auto;padding:16px}
+.card{
+  background:white;
+  border-radius:22px;
+  padding:25px;
+  margin-bottom:18px;
+  box-shadow:0 5px 22px #26345b0d;
+}
+.center{text-align:center}
+.avatar{font-size:65px;margin:10px}
+h1{font-size:27px;margin:10px 0}
+h2{font-size:21px;margin-top:0}
+input{
+  width:100%;
+  padding:17px;
+  border:2px solid #e1e5ef;
+  border-radius:14px;
+  font-size:24px;
+  text-align:center;
+  letter-spacing:10px;
+  margin:15px 0;
+}
+button{
+  width:100%;
+  padding:16px;
+  border:0;
+  border-radius:14px;
+  background:#5268db;
+  color:white;
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:disabled{opacity:.6}
+.stats{display:flex;gap:12px}
+.stat{
+  flex:1;
+  background:#f2f4ff;
+  padding:18px 8px;
+  border-radius:16px;
+  text-align:center;
+}
+.stat strong{display:block;font-size:28px;margin-top:7px}
+.task{
+  padding:17px;
+  border:1px solid #e8ebf3;
+  border-radius:15px;
+  margin:12px 0;
+}
+.task-title{font-weight:bold;font-size:17px}
+.task-info{color:#68738c;font-size:14px;margin-top:8px}
+.message{margin-top:14px;text-align:center;color:#c0392b}
+.hidden{display:none}
+.small{font-size:13px;color:#778099}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">FamilyTasks ⭐</div>
+</header>
+
+<main>
+  <section class="card center" id="loginCard">
+    <div class="avatar">👋</div>
+    <h1>Hej!</h1>
+    <p>Indtast din 4-cifrede kode for at komme ind.</p>
+    <input
+      id="pin"
+      type="password"
+      inputmode="numeric"
+      maxlength="4"
+      placeholder="••••"
+      autocomplete="off"
+    >
+    <button id="loginButton">Log ind</button>
+    <div class="message" id="loginMessage"></div>
+  </section>
+
+  <section id="dashboard" class="hidden">
+    <div class="card center">
+      <div class="avatar" id="avatar"></div>
+      <h1 id="childName"></h1>
+      <p>Her er dine opgaver!</p>
+    </div>
+
+    <div class="card">
+      <div class="stats">
+        <div class="stat">
+          ⭐ Stjerner
+          <strong id="stars">0</strong>
+        </div>
+        <div class="stat">
+          🏆 Point
+          <strong id="points">0</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Mine opgaver 📋</h2>
+      <div id="taskList"></div>
+    </div>
+
+    <button id="refreshButton">Opdater mine opgaver</button>
+    <br><br>
+    <button id="logoutButton" style="background:#8992a8">
+      Log ud
+    </button>
+  </section>
+
+  <p class="message" id="pageMessage"></p>
+</main>
+
+<script>
+const SUPABASE_URL = "https://bhupbdwybahlkssweiht.supabase.co";
+const SUPABASE_KEY = "sb_publishable_kTdbLZD9UmNZ_bsxSUhivQ_8bIOJ-Wa";
+
+const childId = new URLSearchParams(location.search).get("child_id");
+
+const loginCard = document.getElementById("loginCard");
+const dashboard = document.getElementById("dashboard");
+const loginButton = document.getElementById("loginButton");
+const pinInput = document.getElementById("pin");
+
+function headers(){
+  return {
+    "Content-Type":"application/json",
+    "apikey":SUPABASE_KEY
+  };
+}
+
+function showError(message){
+  document.getElementById("loginMessage").textContent = message;
+}
+
+async function callFunction(name, body){
+  const response = await fetch(
+    `${SUPABASE_URL}/functions/v1/${name}`,
+    {
+      method:"POST",
+      headers:headers(),
+      body:JSON.stringify(body)
+    }
+  );
+
+  const data = await response.json();
+
+  if(!response.ok){
+    throw new Error(data.message || "Der opstod en fejl.");
+  }
+
+  return data;
+}
+
+async function loadDashboard(token){
+  const data = await callFunction("child-dashboard",{token});
+
+  if(!data.success){
+    throw new Error(data.message || "Sessionen er udløbet.");
+  }
+
+  document.getElementById("childName").textContent =
+    data.child.name;
+
+  document.getElementById("avatar").textContent =
+    data.child.avatar_url || "😊";
+
+  document.getElementById("stars").textContent =
+    data.stars ?? 0;
+
+  document.getElementById("points").textContent =
+    data.points ?? 0;
+
+  const taskList = document.getElementById("taskList");
+  taskList.replaceChildren();
+
+  if(!data.tasks || data.tasks.length === 0){
+    const empty = document.createElement("p");
+    empty.textContent = "Der er endnu ikke oprettet opgaver til dig 😊";
+    taskList.appendChild(empty);
+  } else {
+    data.tasks.forEach(task => {
+      const item = document.createElement("div");
+      item.className = "task";
+
+      const title = document.createElement("div");
+      title.className = "task-title";
+      title.textContent = task.title;
+
+      const info = document.createElement("div");
+      info.className = "task-info";
+      info.textContent =
+        `⭐ ${task.stars} stjerner · 🏆 ${task.points} point`;
+
+      item.append(title,info);
+
+      if(task.description){
+        const description = document.createElement("p");
+        description.textContent = task.description;
+        item.appendChild(description);
+      }
+
+      if(task.completed_today){
+        const done = document.createElement("div");
+        done.textContent = "✓ Udført i dag";
+        done.style.color = "#26945b";
+        item.appendChild(done);
+      }
+
+      taskList.appendChild(item);
+    });
+  }
+
+  loginCard.classList.add("hidden");
+  dashboard.classList.remove("hidden");
+  document.getElementById("pageMessage").textContent = "";
+}
+
+loginButton.addEventListener("click", async () => {
+  const pin = pinInput.value.trim();
+
+  if(!childId){
+    showError("Der mangler et personligt loginlink.");
+    return;
+  }
+
+  if(!/^[0-9]{4}$/.test(pin)){
+    showError("Indtast præcis 4 cifre.");
+    return;
+  }
+
+  loginButton.disabled = true;
+  loginButton.textContent = "Logger ind...";
+  showError("");
+
+  try{
+    const data = await callFunction("child-login",{
+      child_id:childId,
+      pin
+    });
+
+    if(!data.success){
+      throw new Error(data.message || "Forkert PIN.");
+    }
+
+    sessionStorage.setItem(
+      "familytasks_token_" + childId,
+      data.token
+    );
+
+    pinInput.value = "";
+    await loadDashboard(data.token);
+
+  }catch(error){
+    showError(error.message);
+  }finally{
+    loginButton.disabled = false;
+    loginButton.textContent = "Log ind";
+  }
+});
+
+document.getElementById("refreshButton").addEventListener("click",async()=>{
+  const token = sessionStorage.getItem("familytasks_token_" + childId);
+  if(!token)return;
+
+  try{
+    await loadDashboard(token);
+  }catch(error){
+    document.getElementById("pageMessage").textContent = error.message;
+  }
+});
+
+document.getElementById("logoutButton").addEventListener("click",()=>{
+  sessionStorage.removeItem("familytasks_token_" + childId);
+  dashboard.classList.add("hidden");
+  loginCard.classList.remove("hidden");
+  pinInput.value = "";
+  showError("");
+});
+
+pinInput.addEventListener("keydown",event=>{
+  if(event.key === "Enter") loginButton.click();
+});
+
+async function restoreSession(){
+  if(!childId){
+    showError("Dette link mangler barnets ID.");
+    loginButton.disabled = true;
+    return;
+  }
+
+  const token = sessionStorage.getItem("familytasks_token_" + childId);
+
+  if(token){
+    try{
+      await loadDashboard(token);
+    }catch(error){
+      sessionStorage.removeItem("familytasks_token_" + childId);
+      showError("Log ind igen med din PIN.");
+    }
+  }
+}
+
+restoreSession();
+</script>
+</body>
+</html>
