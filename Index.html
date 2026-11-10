@@ -1,1 +1,617 @@
 
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FamilyTasks – Familien sammen</title>
+  <meta name="theme-color" content="#6758d8">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      background: #f5f5fb;
+      color: #25243a;
+    }
+    button, input, select { font: inherit; }
+    .page {
+      width: min(100% - 32px, 1050px);
+      margin: auto;
+      padding: 28px 0 60px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 45px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-size: 22px;
+      font-weight: 850;
+      letter-spacing: -1px;
+    }
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: #6758d8;
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 23px;
+    }
+    .language {
+      border: 1px solid #e5e3ef;
+      background: white;
+      padding: 9px 12px;
+      border-radius: 10px;
+      color: #444;
+    }
+    .hero {
+      text-align: center;
+      max-width: 650px;
+      margin: 0 auto 35px;
+    }
+    .hero h1 {
+      font-size: clamp(32px, 6vw, 49px);
+      letter-spacing: -2px;
+      line-height: 1.08;
+      margin: 0 0 15px;
+    }
+    .hero p {
+      color: #77758a;
+      font-size: 17px;
+      line-height: 1.6;
+      margin: 0;
+    }
+    .card {
+      background: white;
+      border: 1px solid #eceaf3;
+      border-radius: 22px;
+      padding: 30px;
+      box-shadow: 0 12px 35px rgba(40,35,90,.06);
+      width: min(100%, 470px);
+      margin: auto;
+    }
+    .card h2 { margin: 0 0 8px; font-size: 25px; }
+    .sub { color: #858296; margin: 0 0 24px; line-height: 1.5; }
+    label {
+      display: block;
+      font-weight: 650;
+      font-size: 14px;
+      margin: 17px 0 7px;
+    }
+    input, select {
+      width: 100%;
+      border: 1px solid #e4e1ed;
+      background: #fff;
+      border-radius: 11px;
+      padding: 13px 14px;
+      outline: none;
+      color: #28263b;
+    }
+    input:focus, select:focus {
+      border-color: #7668e5;
+      box-shadow: 0 0 0 3px #7668e51c;
+    }
+    .primary {
+      width: 100%;
+      border: 0;
+      border-radius: 11px;
+      padding: 14px 18px;
+      margin-top: 23px;
+      background: #6758d8;
+      color: white;
+      font-weight: 750;
+      cursor: pointer;
+      transition: .2s;
+    }
+    .primary:hover { background: #5546c4; }
+    .primary:disabled { opacity: .55; cursor: wait; }
+    .switch {
+      text-align: center;
+      margin-top: 20px;
+      color: #77758a;
+      font-size: 14px;
+    }
+    .link {
+      border: 0;
+      background: none;
+      color: #6758d8;
+      font-weight: 750;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .message {
+      display: none;
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-top: 17px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .message.error { display: block; background: #fff0f0; color: #a83232; }
+    .message.success { display: block; background: #eaf8ef; color: #207442; }
+    .hidden { display: none !important; }
+    .dashboard { max-width: 850px; margin: auto; }
+    .welcome {
+      background: linear-gradient(120deg, #6758d8, #9487f1);
+      color: white;
+      border-radius: 22px;
+      padding: 30px;
+      margin-bottom: 22px;
+    }
+    .welcome h1 { margin: 0 0 8px; font-size: 30px; }
+    .welcome p { margin: 0; opacity: .88; }
+    .family-card {
+      background: white;
+      border: 1px solid #eceaf3;
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 14px;
+    }
+    .family-card h3 { margin: 0 0 8px; }
+    .muted { color: #858296; font-size: 14px; }
+    .top-actions { display: flex; align-items: center; gap: 12px; }
+    .logout {
+      border: 1px solid #e4e1ed;
+      background: white;
+      border-radius: 10px;
+      padding: 9px 13px;
+      cursor: pointer;
+    }
+    .footer {
+      text-align: center;
+      color: #aaa7b7;
+      font-size: 12px;
+      margin-top: 35px;
+    }
+    @media(max-width: 600px) {
+      .page { width: min(100% - 22px, 1050px); padding-top: 17px; }
+      header { margin-bottom: 35px; }
+      .card { padding: 23px 19px; }
+      .hero p { font-size: 15px; }
+      .welcome { padding: 23px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="brand">
+        <div class="logo">✦</div>
+        FamilyTasks
+      </div>
+      <div class="top-actions">
+        <select class="language" id="languageSelect" aria-label="Language">
+          <option value="da">Dansk</option>
+          <option value="en">English</option>
+        </select>
+        <button class="logout hidden" id="logoutButton">Log ud</button>
+      </div>
+    </header>
+
+    <section class="hero" id="hero">
+      <h1 id="heroTitle">Små opgaver. Store sejre.</h1>
+      <p id="heroText">Gør hverdagens opgaver sjovere, og hjælp børnene med at blive mere selvstændige.</p>
+    </section>
+
+    <main>
+      <section class="card" id="authCard">
+        <h2 id="formTitle">Velkommen tilbage!</h2>
+        <p class="sub" id="formSubtitle">Log ind på din familiekonto.</p>
+
+        <form id="authForm">
+          <div id="nameField" class="hidden">
+            <label for="displayName" id="nameLabel">Dit navn</label>
+            <input id="displayName" type="text" autocomplete="name">
+          </div>
+
+          <label for="email" id="emailLabel">E-mail</label>
+          <input id="email" type="email" autocomplete="email" required>
+
+          <label for="password" id="passwordLabel">Adgangskode</label>
+          <input id="password" type="password" autocomplete="current-password" minlength="8" required>
+
+          <button class="primary" id="authButton" type="submit">Log ind</button>
+        </form>
+
+        <div class="message" id="authMessage"></div>
+
+        <div class="switch">
+          <span id="switchText">Har du ikke en konto?</span>
+          <button class="link" id="switchButton" type="button">Opret konto</button>
+        </div>
+      </section>
+
+      <section class="dashboard hidden" id="dashboard">
+        <div class="welcome">
+          <h1 id="welcomeTitle">Velkommen!</h1>
+          <p id="welcomeText">Lad os gøre familien klar til FamilyTasks.</p>
+        </div>
+
+        <section class="card" id="createFamilyCard">
+          <h2 id="familyTitle">Opret din familie</h2>
+          <p class="sub" id="familySubtitle">Start med at give familien et navn. Du kan ændre indstillinger senere.</p>
+
+          <form id="familyForm">
+            <label for="familyName" id="familyNameLabel">Familiens navn</label>
+            <input id="familyName" type="text" placeholder="F.eks. Familien Jensen" required maxlength="80">
+
+            <label for="currency" id="currencyLabel">Valuta</label>
+            <select id="currency">
+              <option value="DKK">DKK – Danske kroner</option>
+              <option value="EUR">EUR – Euro</option>
+              <option value="USD">USD – US dollars</option>
+              <option value="GBP">GBP – British pounds</option>
+              <option value="SEK">SEK – Swedish kronor</option>
+              <option value="NOK">NOK – Norwegian kroner</option>
+              <option value="CHF">CHF – Swiss francs</option>
+            </select>
+
+            <label for="timezone" id="timezoneLabel">Tidszone</label>
+            <select id="timezone">
+              <option value="Europe/Copenhagen">Copenhagen</option>
+              <option value="Europe/London">London</option>
+              <option value="Europe/Stockholm">Stockholm</option>
+              <option value="Europe/Oslo">Oslo</option>
+              <option value="Europe/Berlin">Berlin</option>
+              <option value="America/New_York">New York</option>
+              <option value="America/Los_Angeles">Los Angeles</option>
+              <option value="Asia/Dubai">Dubai</option>
+              <option value="Asia/Tokyo">Tokyo</option>
+              <option value="Australia/Sydney">Sydney</option>
+            </select>
+
+            <button class="primary" id="createFamilyButton" type="submit">Opret familie</button>
+          </form>
+          <div class="message" id="familyMessage"></div>
+        </section>
+
+        <section class="hidden" id="familyListSection">
+          <h2 id="myFamiliesTitle">Mine familier</h2>
+          <div id="familyList"></div>
+          <div class="family-card">
+            <h3 id="anotherFamilyTitle">Opret endnu en familie</h3>
+            <p class="muted" id="anotherFamilyText">Du kan oprette flere familier på samme konto.</p>
+            <button class="primary" id="showFamilyForm" type="button">Opret familie</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <div class="footer">FamilyTasks · Made for families everywhere</div>
+  </div>
+
+<script>
+(() => {
+  const SUPABASE_URL = "https://bhupbdwybahlkssweiht.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_kTdbLZD9UmNZ_bsxSUhivQ_8bIOJ-Wa";
+
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let isSignup = false;
+  let currentUser = null;
+  let currentLanguage = localStorage.getItem("familytasks_language") || "da";
+
+  const translations = {
+    da: {
+      heroTitle: "Små opgaver. Store sejre.",
+      heroText: "Gør hverdagens opgaver sjovere, og hjælp børnene med at blive mere selvstændige.",
+      loginTitle: "Velkommen tilbage!",
+      loginSubtitle: "Log ind på din familiekonto.",
+      signupTitle: "Opret din konto",
+      signupSubtitle: "Kom i gang med at skabe en gladere hverdag.",
+      name: "Dit navn", email: "E-mail", password: "Adgangskode",
+      login: "Log ind", signup: "Opret konto",
+      noAccount: "Har du ikke en konto?", hasAccount: "Har du allerede en konto?",
+      createFamily: "Opret din familie",
+      familySubtitle: "Start med at give familien et navn. Du kan ændre indstillinger senere.",
+      familyName: "Familiens navn", currency: "Valuta", timezone: "Tidszone",
+      welcome: "Velkommen!", welcomeText: "Lad os gøre familien klar til FamilyTasks.",
+      myFamilies: "Mine familier", anotherFamily: "Opret endnu en familie",
+      anotherText: "Du kan oprette flere familier på samme konto.",
+      createButton: "Opret familie", logout: "Log ud",
+      loginSuccess: "Du er logget ind.",
+      signupSuccess: "Din konto er oprettet. Tjek din e-mail, hvis du bliver bedt om at bekræfte den.",
+      familySuccess: "Familien er oprettet!",
+      loading: "Vent venligst...",
+      invalid: "Kontrollér dine oplysninger, og prøv igen.",
+      noFamilies: "Du har endnu ikke oprettet en familie.",
+      familyError: "Kunne ikke oprette familien. Prøv igen.",
+      authError: "Der opstod en fejl. Kontrollér e-mail og adgangskode.",
+      confirmEmail: "Kontoen er oprettet. Bekræft din e-mail via linket, før du logger ind.",
+      familyExists: "Familien findes allerede på din konto.",
+      role: "Din rolle",
+      owner: "Ejer"
+    },
+    en: {
+      heroTitle: "Small tasks. Big achievements.",
+      heroText: "Make everyday chores fun and help children become more independent.",
+      loginTitle: "Welcome back!",
+      loginSubtitle: "Log in to your family account.",
+      signupTitle: "Create your account",
+      signupSubtitle: "Get started and create a happier everyday life.",
+      name: "Your name", email: "Email", password: "Password",
+      login: "Log in", signup: "Create account",
+      noAccount: "Don't have an account?", hasAccount: "Already have an account?",
+      createFamily: "Create your family",
+      familySubtitle: "Start by giving your family a name. You can change settings later.",
+      familyName: "Family name", currency: "Currency", timezone: "Time zone",
+      welcome: "Welcome!", welcomeText: "Let's get your family started with FamilyTasks.",
+      myFamilies: "My families", anotherFamily: "Create another family",
+      anotherText: "You can create multiple families on one account.",
+      createButton: "Create family", logout: "Log out",
+      loginSuccess: "You are logged in.",
+      signupSuccess: "Your account has been created. Check your email if confirmation is required.",
+      familySuccess: "Family created!",
+      loading: "Please wait...",
+      invalid: "Check your details and try again.",
+      noFamilies: "You have not created a family yet.",
+      familyError: "Could not create family. Please try again.",
+      authError: "An error occurred. Check your email and password.",
+      confirmEmail: "Account created. Confirm your email using the link before logging in.",
+      familyExists: "This family already exists on your account.",
+      role: "Your role",
+      owner: "Owner"
+    }
+  };
+
+  const $ = id => document.getElementById(id);
+  const t = key => translations[currentLanguage][key] || key;
+
+  function setMessage(id, message, type = "error") {
+    const el = $(id);
+    el.textContent = message;
+    el.className = "message " + type;
+  }
+
+  function clearMessage(id) {
+    const el = $(id);
+    el.textContent = "";
+    el.className = "message";
+  }
+
+  function updateLanguage() {
+    document.documentElement.lang = currentLanguage;
+    $("languageSelect").value = currentLanguage;
+
+    const keys = [
+      "heroTitle", "heroText", "emailLabel", "passwordLabel",
+      "nameLabel", "familyTitle", "familySubtitle", "familyNameLabel",
+      "currencyLabel", "timezoneLabel", "welcomeTitle", "welcomeText",
+      "myFamiliesTitle", "anotherFamilyTitle", "anotherFamilyText",
+      "logoutButton"
+    ];
+
+    keys.forEach(id => {
+      const key = id === "logoutButton" ? "logout" :
+        id.charAt(0).toLowerCase() + id.slice(1);
+      if ($(id)) $(id).textContent = t(key);
+    });
+
+    $("formTitle").textContent = t(isSignup ? "signupTitle" : "loginTitle");
+    $("formSubtitle").textContent = t(isSignup ? "signupSubtitle" : "loginSubtitle");
+    $("authButton").textContent = t(isSignup ? "signup" : "login");
+    $("switchText").textContent = t(isSignup ? "hasAccount" : "noAccount");
+    $("switchButton").textContent = t(isSignup ? "login" : "signup");
+    $("nameField").classList.toggle("hidden", !isSignup);
+    $("familyTitle").textContent = t("createFamily");
+    $("createFamilyButton").textContent = t("createButton");
+  }
+
+  function showAuth() {
+    $("authCard").classList.remove("hidden");
+    $("dashboard").classList.add("hidden");
+    $("hero").classList.remove("hidden");
+    $("logoutButton").classList.add("hidden");
+  }
+
+  async function showDashboard(user) {
+    currentUser = user;
+    $("authCard").classList.add("hidden");
+    $("hero").classList.add("hidden");
+    $("dashboard").classList.remove("hidden");
+    $("logoutButton").classList.remove("hidden");
+    $("welcomeTitle").textContent = t("welcome") + " " +
+      (user.user_metadata?.display_name || user.email.split("@")[0]) + "!";
+    $("welcomeText").textContent = t("welcomeText");
+
+    await loadFamilies();
+  }
+
+  async function loadFamilies() {
+    clearMessage("familyMessage");
+    $("familyListSection").classList.add("hidden");
+    $("createFamilyCard").classList.remove("hidden");
+
+    const { data: memberships, error: memberError } = await db
+      .from("family_members")
+      .select("family_id, role, status")
+      .eq("user_id", currentUser.id)
+      .eq("status", "active");
+
+    if (memberError) {
+      setMessage("familyMessage", memberError.message);
+      return;
+    }
+
+    if (!memberships || memberships.length === 0) return;
+
+    const ids = memberships.map(m => m.family_id);
+    const { data: families, error: familyError } = await db
+      .from("families")
+      .select("id, name, currency, language, timezone")
+      .in("id", ids);
+
+    if (familyError) {
+      setMessage("familyMessage", familyError.message);
+      return;
+    }
+
+    $("createFamilyCard").classList.add("hidden");
+    $("familyListSection").classList.remove("hidden");
+    $("familyList").innerHTML = "";
+
+    families.forEach(family => {
+      const membership = memberships.find(m => m.family_id === family.id);
+      const card = document.createElement("div");
+      card.className = "family-card";
+
+      const title = document.createElement("h3");
+      title.textContent = "🏡 " + family.name;
+
+      const info = document.createElement("p");
+      info.className = "muted";
+      info.textContent = family.currency + " · " +
+        family.timezone + " · " + t("role") + ": " +
+        (membership.role === "owner" ? t("owner") : membership.role);
+
+      card.append(title, info);
+      $("familyList").appendChild(card);
+    });
+  }
+
+  $("languageSelect").addEventListener("change", e => {
+    currentLanguage = e.target.value;
+    localStorage.setItem("familytasks_language", currentLanguage);
+    updateLanguage();
+    if (currentUser) showDashboard(currentUser);
+  });
+
+  $("switchButton").addEventListener("click", () => {
+    isSignup = !isSignup;
+    clearMessage("authMessage");
+    updateLanguage();
+  });
+
+  $("authForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    clearMessage("authMessage");
+
+    const email = $("email").value.trim();
+    const password = $("password").value;
+    const name = $("displayName").value.trim();
+
+    $("authButton").disabled = true;
+    $("authButton").textContent = t("loading");
+
+    try {
+      if (isSignup) {
+        if (!name) throw new Error(t("invalid"));
+
+        const { data, error } = await db.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { display_name: name },
+            emailRedirectTo: window.location.origin
+          }
+        });
+
+        if (error) throw error;
+
+        if (data.session) {
+          setMessage("authMessage", t("signupSuccess"), "success");
+          await showDashboard(data.user);
+        } else {
+          setMessage("authMessage", t("confirmEmail"), "success");
+        }
+      } else {
+        const { data, error } = await db.auth.signInWithPassword({
+          email, password
+        });
+
+        if (error) throw error;
+        await showDashboard(data.user);
+      }
+    } catch (error) {
+      setMessage("authMessage", error.message || t("authError"));
+    } finally {
+      $("authButton").disabled = false;
+      updateLanguage();
+    }
+  });
+
+  $("familyForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    clearMessage("familyMessage");
+
+    const name = $("familyName").value.trim();
+    const currency = $("currency").value;
+    const timezone = $("timezone").value;
+
+    if (!name) {
+      setMessage("familyMessage", t("invalid"));
+      return;
+    }
+
+    $("createFamilyButton").disabled = true;
+    $("createFamilyButton").textContent = t("loading");
+
+    try {
+      const { data, error } = await db.rpc("create_family", {
+        p_name: name,
+        p_currency: currency,
+        p_timezone: timezone,
+        p_language: currentLanguage
+      });
+
+      if (error) throw error;
+
+      setMessage("familyMessage", t("familySuccess"), "success");
+      $("familyName").value = "";
+      await loadFamilies();
+    } catch (error) {
+      setMessage("familyMessage", error.message || t("familyError"));
+    } finally {
+      $("createFamilyButton").disabled = false;
+      $("createFamilyButton").textContent = t("createButton");
+    }
+  });
+
+  $("showFamilyForm").addEventListener("click", () => {
+    $("familyListSection").classList.add("hidden");
+    $("createFamilyCard").classList.remove("hidden");
+  });
+
+  $("logoutButton").addEventListener("click", async () => {
+    await db.auth.signOut();
+    currentUser = null;
+    showAuth();
+  });
+
+  async function init() {
+    updateLanguage();
+
+    const { data: { session } } = await db.auth.getSession();
+
+    if (session?.user) {
+      await showDashboard(session.user);
+    } else {
+      showAuth();
+    }
+
+    db.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_OUT") {
+        currentUser = null;
+        showAuth();
+      } else if (event === "SIGNED_IN" && session?.user) {
+        currentUser = session.user;
+        await showDashboard(session.user);
+      }
+    });
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
+
