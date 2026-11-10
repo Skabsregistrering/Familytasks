@@ -7,8 +7,10 @@
   <title>FamilyTasks – Familien sammen</title>
   <meta name="theme-color" content="#6758d8">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -16,18 +18,23 @@
       background: #f5f5fb;
       color: #25243a;
     }
+
     button, input, select { font: inherit; }
+
     .page {
       width: min(100% - 32px, 1050px);
       margin: auto;
       padding: 28px 0 60px;
     }
+
     header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 45px;
+      margin-bottom: 40px;
+      gap: 12px;
     }
+
     .brand {
       display: flex;
       align-items: center;
@@ -36,6 +43,7 @@
       font-weight: 850;
       letter-spacing: -1px;
     }
+
     .logo {
       width: 42px;
       height: 42px;
@@ -46,47 +54,67 @@
       place-items: center;
       font-size: 23px;
     }
-    .language {
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .language, .logout {
       border: 1px solid #e5e3ef;
       background: white;
       padding: 9px 12px;
       border-radius: 10px;
       color: #444;
+      cursor: pointer;
     }
+
     .hero {
       text-align: center;
       max-width: 650px;
       margin: 0 auto 35px;
     }
+
     .hero h1 {
       font-size: clamp(32px, 6vw, 49px);
       letter-spacing: -2px;
       line-height: 1.08;
       margin: 0 0 15px;
     }
+
     .hero p {
       color: #77758a;
       font-size: 17px;
       line-height: 1.6;
       margin: 0;
     }
+
     .card {
       background: white;
       border: 1px solid #eceaf3;
       border-radius: 22px;
-      padding: 30px;
+      padding: 28px;
       box-shadow: 0 12px 35px rgba(40,35,90,.06);
-      width: min(100%, 470px);
-      margin: auto;
+      width: min(100%, 520px);
+      margin: 0 auto 20px;
     }
-    .card h2 { margin: 0 0 8px; font-size: 25px; }
-    .sub { color: #858296; margin: 0 0 24px; line-height: 1.5; }
+
+    .card h2 { margin: 0 0 8px; font-size: 24px; }
+
+    .sub {
+      color: #858296;
+      margin: 0 0 22px;
+      line-height: 1.5;
+    }
+
     label {
       display: block;
       font-weight: 650;
       font-size: 14px;
       margin: 17px 0 7px;
     }
+
     input, select {
       width: 100%;
       border: 1px solid #e4e1ed;
@@ -96,30 +124,45 @@
       outline: none;
       color: #28263b;
     }
+
     input:focus, select:focus {
       border-color: #7668e5;
       box-shadow: 0 0 0 3px #7668e51c;
     }
+
     .primary {
       width: 100%;
       border: 0;
       border-radius: 11px;
       padding: 14px 18px;
-      margin-top: 23px;
+      margin-top: 22px;
       background: #6758d8;
       color: white;
       font-weight: 750;
       cursor: pointer;
       transition: .2s;
     }
+
     .primary:hover { background: #5546c4; }
     .primary:disabled { opacity: .55; cursor: wait; }
+
+    .secondary {
+      border: 1px solid #e4e1ed;
+      border-radius: 10px;
+      padding: 10px 14px;
+      background: white;
+      color: #6758d8;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
     .switch {
       text-align: center;
       margin-top: 20px;
       color: #77758a;
       font-size: 14px;
     }
+
     .link {
       border: 0;
       background: none;
@@ -128,6 +171,7 @@
       cursor: pointer;
       padding: 4px;
     }
+
     .message {
       display: none;
       padding: 12px 14px;
@@ -135,159 +179,279 @@
       margin-top: 17px;
       font-size: 14px;
       line-height: 1.5;
+      overflow-wrap: anywhere;
     }
-    .message.error { display: block; background: #fff0f0; color: #a83232; }
-    .message.success { display: block; background: #eaf8ef; color: #207442; }
+
+    .message.error {
+      display: block;
+      background: #fff0f0;
+      color: #a83232;
+    }
+
+    .message.success {
+      display: block;
+      background: #eaf8ef;
+      color: #207442;
+    }
+
     .hidden { display: none !important; }
-    .dashboard { max-width: 850px; margin: auto; }
+
+    .dashboard { max-width: 900px; margin: auto; }
+
     .welcome {
       background: linear-gradient(120deg, #6758d8, #9487f1);
       color: white;
       border-radius: 22px;
-      padding: 30px;
+      padding: 28px;
       margin-bottom: 22px;
     }
+
     .welcome h1 { margin: 0 0 8px; font-size: 30px; }
     .welcome p { margin: 0; opacity: .88; }
+
+    .section-title {
+      margin: 28px 0 14px;
+      font-size: 23px;
+    }
+
     .family-card {
       background: white;
       border: 1px solid #eceaf3;
       border-radius: 18px;
-      padding: 24px;
-      margin-bottom: 14px;
+      padding: 22px;
+      margin-bottom: 15px;
     }
-    .family-card h3 { margin: 0 0 8px; }
+
+    .family-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .family-heading h3 { margin: 0 0 7px; }
+
     .muted { color: #858296; font-size: 14px; }
-    .top-actions { display: flex; align-items: center; gap: 12px; }
-    .logout {
-      border: 1px solid #e4e1ed;
-      background: white;
-      border-radius: 10px;
-      padding: 9px 13px;
-      cursor: pointer;
+
+    .selected-family {
+      border: 2px solid #6758d8;
+      background: #faf9ff;
     }
+
+    .children-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .child-card {
+      background: #f7f6fc;
+      border: 1px solid #eceaf3;
+      border-radius: 15px;
+      padding: 17px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .avatar {
+      width: 52px;
+      height: 52px;
+      flex-shrink: 0;
+      border-radius: 16px;
+      background: #ebe8ff;
+      display: grid;
+      place-items: center;
+      font-size: 29px;
+    }
+
+    .child-card strong { display: block; margin-bottom: 4px; }
+    .child-card small { color: #858296; }
+
+    .empty-children {
+      color: #858296;
+      font-size: 14px;
+      padding: 12px 0;
+    }
+
     .footer {
       text-align: center;
       color: #aaa7b7;
       font-size: 12px;
       margin-top: 35px;
     }
+
     @media(max-width: 600px) {
       .page { width: min(100% - 22px, 1050px); padding-top: 17px; }
-      header { margin-bottom: 35px; }
-      .card { padding: 23px 19px; }
+      header { margin-bottom: 30px; }
+      .card { padding: 22px 18px; }
       .hero p { font-size: 15px; }
       .welcome { padding: 23px; }
+      .brand { font-size: 19px; }
     }
   </style>
 </head>
-<body>
-  <div class="page">
-    <header>
-      <div class="brand">
-        <div class="logo">✦</div>
-        FamilyTasks
-      </div>
-      <div class="top-actions">
-        <select class="language" id="languageSelect" aria-label="Language">
-          <option value="da">Dansk</option>
-          <option value="en">English</option>
-        </select>
-        <button class="logout hidden" id="logoutButton">Log ud</button>
-      </div>
-    </header>
 
-    <section class="hero" id="hero">
-      <h1 id="heroTitle">Små opgaver. Store sejre.</h1>
-      <p id="heroText">Gør hverdagens opgaver sjovere, og hjælp børnene med at blive mere selvstændige.</p>
+<body>
+<div class="page">
+
+  <header>
+    <div class="brand">
+      <div class="logo">✦</div>
+      FamilyTasks
+    </div>
+
+    <div class="top-actions">
+      <select class="language" id="languageSelect" aria-label="Language">
+        <option value="da">Dansk</option>
+        <option value="en">English</option>
+      </select>
+      <button class="logout hidden" id="logoutButton">Log ud</button>
+    </div>
+  </header>
+
+  <section class="hero" id="hero">
+    <h1 id="heroTitle">Små opgaver. Store sejre.</h1>
+    <p id="heroText">Gør hverdagens opgaver sjovere, og hjælp børnene med at blive mere selvstændige.</p>
+  </section>
+
+  <main>
+    <section class="card" id="authCard">
+      <h2 id="formTitle">Velkommen tilbage!</h2>
+      <p class="sub" id="formSubtitle">Log ind på din familiekonto.</p>
+
+      <form id="authForm">
+        <div id="nameField" class="hidden">
+          <label for="displayName" id="nameLabel">Dit navn</label>
+          <input id="displayName" type="text" autocomplete="name">
+        </div>
+
+        <label for="email" id="emailLabel">E-mail</label>
+        <input id="email" type="email" autocomplete="email" required>
+
+        <label for="password" id="passwordLabel">Adgangskode</label>
+        <input id="password" type="password" autocomplete="current-password" minlength="8" required>
+
+        <button class="primary" id="authButton" type="submit">Log ind</button>
+      </form>
+
+      <div class="message" id="authMessage"></div>
+
+      <div class="switch">
+        <span id="switchText">Har du ikke en konto?</span>
+        <button class="link" id="switchButton" type="button">Opret konto</button>
+      </div>
     </section>
 
-    <main>
-      <section class="card" id="authCard">
-        <h2 id="formTitle">Velkommen tilbage!</h2>
-        <p class="sub" id="formSubtitle">Log ind på din familiekonto.</p>
+    <section class="dashboard hidden" id="dashboard">
+      <div class="welcome">
+        <h1 id="welcomeTitle">Velkommen!</h1>
+        <p id="welcomeText">Lad os gøre familien klar til FamilyTasks.</p>
+      </div>
 
-        <form id="authForm">
-          <div id="nameField" class="hidden">
-            <label for="displayName" id="nameLabel">Dit navn</label>
-            <input id="displayName" type="text" autocomplete="name">
-          </div>
+      <section class="card" id="createFamilyCard">
+        <h2 id="familyTitle">Opret din familie</h2>
+        <p class="sub" id="familySubtitle">Start med at give familien et navn.</p>
 
-          <label for="email" id="emailLabel">E-mail</label>
-          <input id="email" type="email" autocomplete="email" required>
+        <form id="familyForm">
+          <label for="familyName" id="familyNameLabel">Familiens navn</label>
+          <input id="familyName" type="text" placeholder="F.eks. Familien Jensen" required maxlength="80">
 
-          <label for="password" id="passwordLabel">Adgangskode</label>
-          <input id="password" type="password" autocomplete="current-password" minlength="8" required>
+          <label for="currency" id="currencyLabel">Valuta</label>
+          <select id="currency">
+            <option value="DKK">DKK – Danske kroner</option>
+            <option value="EUR">EUR – Euro</option>
+            <option value="USD">USD – US dollars</option>
+            <option value="GBP">GBP – British pounds</option>
+            <option value="SEK">SEK – Swedish kronor</option>
+            <option value="NOK">NOK – Norwegian kroner</option>
+            <option value="CHF">CHF – Swiss francs</option>
+          </select>
 
-          <button class="primary" id="authButton" type="submit">Log ind</button>
+          <label for="timezone" id="timezoneLabel">Tidszone</label>
+          <select id="timezone">
+            <option value="Europe/Copenhagen">Copenhagen</option>
+            <option value="Europe/London">London</option>
+            <option value="Europe/Stockholm">Stockholm</option>
+            <option value="Europe/Oslo">Oslo</option>
+            <option value="Europe/Berlin">Berlin</option>
+            <option value="America/New_York">New York</option>
+            <option value="America/Los_Angeles">Los Angeles</option>
+            <option value="Asia/Dubai">Dubai</option>
+            <option value="Asia/Tokyo">Tokyo</option>
+            <option value="Australia/Sydney">Sydney</option>
+          </select>
+
+          <button class="primary" id="createFamilyButton" type="submit">Opret familie</button>
         </form>
-
-        <div class="message" id="authMessage"></div>
-
-        <div class="switch">
-          <span id="switchText">Har du ikke en konto?</span>
-          <button class="link" id="switchButton" type="button">Opret konto</button>
-        </div>
+        <div class="message" id="familyMessage"></div>
       </section>
 
-      <section class="dashboard hidden" id="dashboard">
-        <div class="welcome">
-          <h1 id="welcomeTitle">Velkommen!</h1>
-          <p id="welcomeText">Lad os gøre familien klar til FamilyTasks.</p>
-        </div>
+      <section class="hidden" id="familyListSection">
+        <h2 class="section-title" id="myFamiliesTitle">Mine familier</h2>
+        <div id="familyList"></div>
 
-        <section class="card" id="createFamilyCard">
-          <h2 id="familyTitle">Opret din familie</h2>
-          <p class="sub" id="familySubtitle">Start med at give familien et navn. Du kan ændre indstillinger senere.</p>
+        <section class="card" id="createChildCard">
+          <h2 id="childTitle">Opret et barn</h2>
+          <p class="sub" id="childSubtitle">Vælg en familie, og opret barnets profil.</p>
 
-          <form id="familyForm">
-            <label for="familyName" id="familyNameLabel">Familiens navn</label>
-            <input id="familyName" type="text" placeholder="F.eks. Familien Jensen" required maxlength="80">
+          <div id="selectedFamilyText" class="muted"></div>
 
-            <label for="currency" id="currencyLabel">Valuta</label>
-            <select id="currency">
-              <option value="DKK">DKK – Danske kroner</option>
-              <option value="EUR">EUR – Euro</option>
-              <option value="USD">USD – US dollars</option>
-              <option value="GBP">GBP – British pounds</option>
-              <option value="SEK">SEK – Swedish kronor</option>
-              <option value="NOK">NOK – Norwegian kroner</option>
-              <option value="CHF">CHF – Swiss francs</option>
+          <form id="childForm">
+            <label for="childName" id="childNameLabel">Barnets navn</label>
+            <input id="childName" type="text" maxlength="60" required placeholder="Barnets navn">
+
+            <label for="childAvatar" id="childAvatarLabel">Vælg avatar</label>
+            <select id="childAvatar">
+              <option value="🦁">🦁 Løve</option>
+              <option value="🐻">🐻 Bjørn</option>
+              <option value="🐼">🐼 Panda</option>
+              <option value="🦊">🦊 Ræv</option>
+              <option value="🐸">🐸 Frø</option>
+              <option value="🐯">🐯 Tiger</option>
+              <option value="🐵">🐵 Abe</option>
+              <option value="🐰">🐰 Kanin</option>
+              <option value="🦄">🦄 Enhjørning</option>
+              <option value="🚀">🚀 Raket</option>
+              <option value="⚽">⚽ Fodbold</option>
+              <option value="⭐">⭐ Stjerne</option>
             </select>
 
-            <label for="timezone" id="timezoneLabel">Tidszone</label>
-            <select id="timezone">
-              <option value="Europe/Copenhagen">Copenhagen</option>
-              <option value="Europe/London">London</option>
-              <option value="Europe/Stockholm">Stockholm</option>
-              <option value="Europe/Oslo">Oslo</option>
-              <option value="Europe/Berlin">Berlin</option>
-              <option value="America/New_York">New York</option>
-              <option value="America/Los_Angeles">Los Angeles</option>
-              <option value="Asia/Dubai">Dubai</option>
-              <option value="Asia/Tokyo">Tokyo</option>
-              <option value="Australia/Sydney">Sydney</option>
-            </select>
+            <label for="birthYear" id="birthYearLabel">Fødselsår (valgfrit)</label>
+            <input id="birthYear" type="number" min="2000" max="2035" placeholder="F.eks. 2019">
 
-            <button class="primary" id="createFamilyButton" type="submit">Opret familie</button>
+            <label for="childPin" id="childPinLabel">Barnets 4-cifrede PIN-kode</label>
+            <input
+              id="childPin"
+              type="password"
+              inputmode="numeric"
+              pattern="[0-9]{4}"
+              maxlength="4"
+              minlength="4"
+              autocomplete="new-password"
+              required
+              placeholder="••••"
+            >
+
+            <button class="primary" id="createChildButton" type="submit">Opret barn</button>
           </form>
-          <div class="message" id="familyMessage"></div>
+
+          <div class="message" id="childMessage"></div>
         </section>
 
-        <section class="hidden" id="familyListSection">
-          <h2 id="myFamiliesTitle">Mine familier</h2>
-          <div id="familyList"></div>
-          <div class="family-card">
-            <h3 id="anotherFamilyTitle">Opret endnu en familie</h3>
-            <p class="muted" id="anotherFamilyText">Du kan oprette flere familier på samme konto.</p>
-            <button class="primary" id="showFamilyForm" type="button">Opret familie</button>
-          </div>
-        </section>
+        <div class="family-card">
+          <h3 id="anotherFamilyTitle">Opret endnu en familie</h3>
+          <p class="muted" id="anotherFamilyText">Du kan oprette flere familier på samme konto.</p>
+          <button class="secondary" id="showFamilyForm" type="button">Opret familie</button>
+        </div>
       </section>
-    </main>
+    </section>
+  </main>
 
-    <div class="footer">FamilyTasks · Made for families everywhere</div>
-  </div>
+  <div class="footer">FamilyTasks · Made for families everywhere</div>
+</div>
 
 <script>
 (() => {
@@ -298,6 +462,10 @@
 
   let isSignup = false;
   let currentUser = null;
+  let selectedFamilyId = null;
+  let selectedFamilyName = "";
+  let familiesCache = [];
+
   let currentLanguage = localStorage.getItem("familytasks_language") || "da";
 
   const translations = {
@@ -307,29 +475,56 @@
       loginTitle: "Velkommen tilbage!",
       loginSubtitle: "Log ind på din familiekonto.",
       signupTitle: "Opret din konto",
-      signupSubtitle: "Kom i gang med at skabe en gladere hverdag.",
-      name: "Dit navn", email: "E-mail", password: "Adgangskode",
-      login: "Log ind", signup: "Opret konto",
-      noAccount: "Har du ikke en konto?", hasAccount: "Har du allerede en konto?",
+      signupSubtitle: "Kom i gang og skab en gladere hverdag.",
+      name: "Dit navn",
+      email: "E-mail",
+      password: "Adgangskode",
+      login: "Log ind",
+      signup: "Opret konto",
+      noAccount: "Har du ikke en konto?",
+      hasAccount: "Har du allerede en konto?",
+      welcome: "Velkommen!",
+      welcomeText: "Lad os gøre familien klar til FamilyTasks.",
       createFamily: "Opret din familie",
       familySubtitle: "Start med at give familien et navn. Du kan ændre indstillinger senere.",
-      familyName: "Familiens navn", currency: "Valuta", timezone: "Tidszone",
-      welcome: "Velkommen!", welcomeText: "Lad os gøre familien klar til FamilyTasks.",
-      myFamilies: "Mine familier", anotherFamily: "Opret endnu en familie",
+      familyName: "Familiens navn",
+      currency: "Valuta",
+      timezone: "Tidszone",
+      createButton: "Opret familie",
+      myFamilies: "Mine familier",
+      anotherFamily: "Opret endnu en familie",
       anotherText: "Du kan oprette flere familier på samme konto.",
-      createButton: "Opret familie", logout: "Log ud",
+      logout: "Log ud",
       loginSuccess: "Du er logget ind.",
-      signupSuccess: "Din konto er oprettet. Tjek din e-mail, hvis du bliver bedt om at bekræfte den.",
+      signupSuccess: "Din konto er oprettet.",
       familySuccess: "Familien er oprettet!",
       loading: "Vent venligst...",
       invalid: "Kontrollér dine oplysninger, og prøv igen.",
-      noFamilies: "Du har endnu ikke oprettet en familie.",
       familyError: "Kunne ikke oprette familien. Prøv igen.",
       authError: "Der opstod en fejl. Kontrollér e-mail og adgangskode.",
       confirmEmail: "Kontoen er oprettet. Bekræft din e-mail via linket, før du logger ind.",
-      familyExists: "Familien findes allerede på din konto.",
       role: "Din rolle",
-      owner: "Ejer"
+      owner: "Ejer",
+      chooseFamily: "Vælg familie",
+      selected: "Valgt familie",
+      childTitle: "Opret et barn",
+      childSubtitle: "Vælg en familie, og opret barnets profil.",
+      childName: "Barnets navn",
+      childAvatar: "Vælg avatar",
+      birthYear: "Fødselsår (valgfrit)",
+      childPin: "Barnets 4-cifrede PIN-kode",
+      createChild: "Opret barn",
+      childSuccess: "Barnets profil er oprettet!",
+      childError: "Kunne ikke oprette barnets profil.",
+      children: "Børn",
+      noChildren: "Der er endnu ikke oprettet børn i denne familie.",
+      childLoading: "Opretter barn...",
+      noFamilySelected: "Vælg først en familie ovenfor.",
+      childPinError: "PIN-koden skal bestå af præcis 4 cifre.",
+      yearError: "Indtast et gyldigt fødselsår.",
+      loadError: "Kunne ikke hente familiens oplysninger.",
+      familyEmpty: "Du har endnu ikke oprettet en familie.",
+      familyCreated: "Familien er oprettet."
     },
     en: {
       heroTitle: "Small tasks. Big achievements.",
@@ -338,28 +533,55 @@
       loginSubtitle: "Log in to your family account.",
       signupTitle: "Create your account",
       signupSubtitle: "Get started and create a happier everyday life.",
-      name: "Your name", email: "Email", password: "Password",
-      login: "Log in", signup: "Create account",
-      noAccount: "Don't have an account?", hasAccount: "Already have an account?",
+      name: "Your name",
+      email: "Email",
+      password: "Password",
+      login: "Log in",
+      signup: "Create account",
+      noAccount: "Don't have an account?",
+      hasAccount: "Already have an account?",
+      welcome: "Welcome!",
+      welcomeText: "Let's get your family started with FamilyTasks.",
       createFamily: "Create your family",
       familySubtitle: "Start by giving your family a name. You can change settings later.",
-      familyName: "Family name", currency: "Currency", timezone: "Time zone",
-      welcome: "Welcome!", welcomeText: "Let's get your family started with FamilyTasks.",
-      myFamilies: "My families", anotherFamily: "Create another family",
+      familyName: "Family name",
+      currency: "Currency",
+      timezone: "Time zone",
+      createButton: "Create family",
+      myFamilies: "My families",
+      anotherFamily: "Create another family",
       anotherText: "You can create multiple families on one account.",
-      createButton: "Create family", logout: "Log out",
+      logout: "Log out",
       loginSuccess: "You are logged in.",
-      signupSuccess: "Your account has been created. Check your email if confirmation is required.",
+      signupSuccess: "Your account has been created.",
       familySuccess: "Family created!",
       loading: "Please wait...",
       invalid: "Check your details and try again.",
-      noFamilies: "You have not created a family yet.",
       familyError: "Could not create family. Please try again.",
       authError: "An error occurred. Check your email and password.",
       confirmEmail: "Account created. Confirm your email using the link before logging in.",
-      familyExists: "This family already exists on your account.",
       role: "Your role",
-      owner: "Owner"
+      owner: "Owner",
+      chooseFamily: "Select family",
+      selected: "Selected family",
+      childTitle: "Create a child",
+      childSubtitle: "Choose a family and create the child's profile.",
+      childName: "Child's name",
+      childAvatar: "Choose avatar",
+      birthYear: "Birth year (optional)",
+      childPin: "Child's 4-digit PIN",
+      createChild: "Create child",
+      childSuccess: "Child profile created!",
+      childError: "Could not create the child profile.",
+      children: "Children",
+      noChildren: "No children have been added to this family yet.",
+      childLoading: "Creating child...",
+      noFamilySelected: "Select a family above first.",
+      childPinError: "The PIN must contain exactly 4 digits.",
+      yearError: "Enter a valid birth year.",
+      loadError: "Could not load family information.",
+      familyEmpty: "You have not created a family yet.",
+      familyCreated: "Family created."
     }
   };
 
@@ -382,28 +604,44 @@
     document.documentElement.lang = currentLanguage;
     $("languageSelect").value = currentLanguage;
 
-    const keys = [
-      "heroTitle", "heroText", "emailLabel", "passwordLabel",
-      "nameLabel", "familyTitle", "familySubtitle", "familyNameLabel",
-      "currencyLabel", "timezoneLabel", "welcomeTitle", "welcomeText",
-      "myFamiliesTitle", "anotherFamilyTitle", "anotherFamilyText",
-      "logoutButton"
-    ];
+    $("heroTitle").textContent = t("heroTitle");
+    $("heroText").textContent = t("heroText");
+    $("emailLabel").textContent = t("email");
+    $("passwordLabel").textContent = t("password");
+    $("nameLabel").textContent = t("name");
+    $("welcomeText").textContent = t("welcomeText");
 
-    keys.forEach(id => {
-      const key = id === "logoutButton" ? "logout" :
-        id.charAt(0).toLowerCase() + id.slice(1);
-      if ($(id)) $(id).textContent = t(key);
-    });
+    $("familyTitle").textContent = t("createFamily");
+    $("familySubtitle").textContent = t("familySubtitle");
+    $("familyNameLabel").textContent = t("familyName");
+    $("currencyLabel").textContent = t("currency");
+    $("timezoneLabel").textContent = t("timezone");
+    $("myFamiliesTitle").textContent = t("myFamilies");
+    $("anotherFamilyTitle").textContent = t("anotherFamily");
+    $("anotherFamilyText").textContent = t("anotherText");
+    $("logoutButton").textContent = t("logout");
+
+    $("childTitle").textContent = t("childTitle");
+    $("childSubtitle").textContent = t("childSubtitle");
+    $("childNameLabel").textContent = t("childName");
+    $("childAvatarLabel").textContent = t("childAvatar");
+    $("birthYearLabel").textContent = t("birthYear");
+    $("childPinLabel").textContent = t("childPin");
 
     $("formTitle").textContent = t(isSignup ? "signupTitle" : "loginTitle");
     $("formSubtitle").textContent = t(isSignup ? "signupSubtitle" : "loginSubtitle");
     $("authButton").textContent = t(isSignup ? "signup" : "login");
     $("switchText").textContent = t(isSignup ? "hasAccount" : "noAccount");
     $("switchButton").textContent = t(isSignup ? "login" : "signup");
+
     $("nameField").classList.toggle("hidden", !isSignup);
-    $("familyTitle").textContent = t("createFamily");
     $("createFamilyButton").textContent = t("createButton");
+    $("createChildButton").textContent = t("createChild");
+    $("showFamilyForm").textContent = t("createButton");
+
+    if (selectedFamilyName) {
+      $("selectedFamilyText").textContent = t("selected") + ": " + selectedFamilyName;
+    }
   }
 
   function showAuth() {
@@ -419,15 +657,27 @@
     $("hero").classList.add("hidden");
     $("dashboard").classList.remove("hidden");
     $("logoutButton").classList.remove("hidden");
-    $("welcomeTitle").textContent = t("welcome") + " " +
+
+    $("welcomeTitle").textContent =
+      t("welcome") + " " +
       (user.user_metadata?.display_name || user.email.split("@")[0]) + "!";
+
     $("welcomeText").textContent = t("welcomeText");
 
     await loadFamilies();
   }
 
+  function makeTextElement(tag, text, className) {
+    const el = document.createElement(tag);
+    el.textContent = text;
+    if (className) el.className = className;
+    return el;
+  }
+
   async function loadFamilies() {
     clearMessage("familyMessage");
+    clearMessage("childMessage");
+
     $("familyListSection").classList.add("hidden");
     $("createFamilyCard").classList.remove("hidden");
 
@@ -442,9 +692,14 @@
       return;
     }
 
-    if (!memberships || memberships.length === 0) return;
+    if (!memberships || memberships.length === 0) {
+      $("createFamilyCard").classList.remove("hidden");
+      $("familyListSection").classList.add("hidden");
+      return;
+    }
 
     const ids = memberships.map(m => m.family_id);
+
     const { data: families, error: familyError } = await db
       .from("families")
       .select("id, name, currency, language, timezone")
@@ -455,34 +710,217 @@
       return;
     }
 
+    familiesCache = families || [];
+
+    const { data: children, error: childrenError } = await db
+      .from("children")
+      .select("id, family_id, name, avatar_url, birth_year, is_active, sort_order")
+      .in("family_id", ids)
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
+
+    if (childrenError) {
+      setMessage("familyMessage", t("loadError") + " " + childrenError.message);
+      return;
+    }
+
     $("createFamilyCard").classList.add("hidden");
     $("familyListSection").classList.remove("hidden");
+    $("familyList").innerHTML = "";
+
+    familiesCache.forEach(family => {
+      const membership = memberships.find(m => m.family_id === family.id);
+      const card = document.createElement("div");
+      card.className = "family-card" +
+        (selectedFamilyId === family.id ? " selected-family" : "");
+
+      const heading = document.createElement("div");
+      heading.className = "family-heading";
+
+      const titleArea = document.createElement("div");
+      titleArea.appendChild(makeTextElement("h3", "🏡 " + family.name));
+
+      const role = membership?.role === "owner"
+        ? t("owner")
+        : (membership?.role || "");
+
+      titleArea.appendChild(makeTextElement(
+        "p",
+        family.currency + " · " + family.timezone + " · " + t("role") + ": " + role,
+        "muted"
+      ));
+
+      const selectButton = document.createElement("button");
+      selectButton.type = "button";
+      selectButton.className = "secondary";
+      selectButton.textContent = selectedFamilyId === family.id
+        ? "✓ " + t("selected")
+        : t("chooseFamily");
+
+      selectButton.addEventListener("click", () => {
+        selectedFamilyId = family.id;
+        selectedFamilyName = family.name;
+        updateLanguage();
+        renderFamilies(familiesCache, memberships, children || []);
+      });
+
+      heading.append(titleArea, selectButton);
+      card.appendChild(heading);
+
+      card.appendChild(makeTextElement("h4", t("children")));
+
+      const familyChildren = (children || []).filter(
+        child => child.family_id === family.id
+      );
+
+      if (familyChildren.length === 0) {
+        card.appendChild(makeTextElement(
+          "p",
+          t("noChildren"),
+          "empty-children"
+        ));
+      } else {
+        const childrenList = document.createElement("div");
+        childrenList.className = "children-list";
+
+        familyChildren.forEach(child => {
+          const childCard = document.createElement("div");
+          childCard.className = "child-card";
+
+          const avatar = makeTextElement(
+            "div",
+            child.avatar_url || "🙂",
+            "avatar"
+          );
+
+          const details = document.createElement("div");
+          details.appendChild(makeTextElement("strong", child.name));
+
+          if (child.birth_year) {
+            details.appendChild(makeTextElement(
+              "small",
+              String(child.birth_year)
+            ));
+          }
+
+          childCard.append(avatar, details);
+          childrenList.appendChild(childCard);
+        });
+
+        card.appendChild(childrenList);
+      }
+
+      $("familyList").appendChild(card);
+    });
+
+    if (!selectedFamilyId || !familiesCache.some(f => f.id === selectedFamilyId)) {
+      selectedFamilyId = familiesCache[0]?.id || null;
+      selectedFamilyName = familiesCache[0]?.name || "";
+      renderFamilies(familiesCache, memberships, children || []);
+    }
+
+    $("selectedFamilyText").textContent = selectedFamilyName
+      ? t("selected") + ": " + selectedFamilyName
+      : t("noFamilySelected");
+  }
+
+  function renderFamilies(families, memberships, children) {
     $("familyList").innerHTML = "";
 
     families.forEach(family => {
       const membership = memberships.find(m => m.family_id === family.id);
       const card = document.createElement("div");
-      card.className = "family-card";
+      card.className = "family-card" +
+        (selectedFamilyId === family.id ? " selected-family" : "");
 
-      const title = document.createElement("h3");
-      title.textContent = "🏡 " + family.name;
+      const heading = document.createElement("div");
+      heading.className = "family-heading";
 
-      const info = document.createElement("p");
-      info.className = "muted";
-      info.textContent = family.currency + " · " +
-        family.timezone + " · " + t("role") + ": " +
-        (membership.role === "owner" ? t("owner") : membership.role);
+      const titleArea = document.createElement("div");
+      titleArea.appendChild(makeTextElement("h3", "🏡 " + family.name));
 
-      card.append(title, info);
+      const role = membership?.role === "owner"
+        ? t("owner")
+        : (membership?.role || "");
+
+      titleArea.appendChild(makeTextElement(
+        "p",
+        family.currency + " · " + family.timezone + " · " + t("role") + ": " + role,
+        "muted"
+      ));
+
+      const selectButton = document.createElement("button");
+      selectButton.type = "button";
+      selectButton.className = "secondary";
+      selectButton.textContent = selectedFamilyId === family.id
+        ? "✓ " + t("selected")
+        : t("chooseFamily");
+
+      selectButton.addEventListener("click", async () => {
+        selectedFamilyId = family.id;
+        selectedFamilyName = family.name;
+        updateLanguage();
+        await loadFamilies();
+      });
+
+      heading.append(titleArea, selectButton);
+      card.appendChild(heading);
+      card.appendChild(makeTextElement("h4", t("children")));
+
+      const familyChildren = children.filter(
+        child => child.family_id === family.id
+      );
+
+      if (familyChildren.length === 0) {
+        card.appendChild(makeTextElement(
+          "p",
+          t("noChildren"),
+          "empty-children"
+        ));
+      } else {
+        const childrenList = document.createElement("div");
+        childrenList.className = "children-list";
+
+        familyChildren.forEach(child => {
+          const childCard = document.createElement("div");
+          childCard.className = "child-card";
+
+          const avatar = makeTextElement(
+            "div",
+            child.avatar_url || "🙂",
+            "avatar"
+          );
+
+          const details = document.createElement("div");
+          details.appendChild(makeTextElement("strong", child.name));
+
+          if (child.birth_year) {
+            details.appendChild(makeTextElement("small", String(child.birth_year)));
+          }
+
+          childCard.append(avatar, details);
+          childrenList.appendChild(childCard);
+        });
+
+        card.appendChild(childrenList);
+      }
+
       $("familyList").appendChild(card);
     });
+
+    $("selectedFamilyText").textContent = selectedFamilyName
+      ? t("selected") + ": " + selectedFamilyName
+      : t("noFamilySelected");
   }
 
   $("languageSelect").addEventListener("change", e => {
     currentLanguage = e.target.value;
     localStorage.setItem("familytasks_language", currentLanguage);
     updateLanguage();
-    if (currentUser) showDashboard(currentUser);
+
+    if (currentUser) {
+      showDashboard(currentUser);
+    }
   });
 
   $("switchButton").addEventListener("click", () => {
@@ -511,7 +949,7 @@
           password,
           options: {
             data: { display_name: name },
-            emailRedirectTo: window.location.origin
+            emailRedirectTo: window.location.href.split("?")[0]
           }
         });
 
@@ -525,7 +963,8 @@
         }
       } else {
         const { data, error } = await db.auth.signInWithPassword({
-          email, password
+          email,
+          password
         });
 
         if (error) throw error;
@@ -565,8 +1004,11 @@
 
       if (error) throw error;
 
-      setMessage("familyMessage", t("familySuccess"), "success");
       $("familyName").value = "";
+      selectedFamilyId = null;
+      selectedFamilyName = "";
+
+      setMessage("familyMessage", t("familySuccess"), "success");
       await loadFamilies();
     } catch (error) {
       setMessage("familyMessage", error.message || t("familyError"));
@@ -576,14 +1018,80 @@
     }
   });
 
+  $("childForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    clearMessage("childMessage");
+
+    if (!selectedFamilyId) {
+      setMessage("childMessage", t("noFamilySelected"));
+      return;
+    }
+
+    const name = $("childName").value.trim();
+    const avatar = $("childAvatar").value;
+    const pin = $("childPin").value.trim();
+    const birthYearValue = $("birthYear").value.trim();
+
+    if (!/^[0-9]{4}$/.test(pin)) {
+      setMessage("childMessage", t("childPinError"));
+      return;
+    }
+
+    let birthYear = null;
+
+    if (birthYearValue) {
+      birthYear = Number(birthYearValue);
+
+      if (!Number.isInteger(birthYear) || birthYear < 2000 || birthYear > 2035) {
+        setMessage("childMessage", t("yearError"));
+        return;
+      }
+    }
+
+    $("createChildButton").disabled = true;
+    $("createChildButton").textContent = t("childLoading");
+
+    try {
+      const { error } = await db.rpc("create_child_with_pin", {
+        p_family_id: selectedFamilyId,
+        p_name: name,
+        p_pin: pin,
+        p_avatar_url: avatar,
+        p_birth_year: birthYear
+      });
+
+      if (error) throw error;
+
+      $("childName").value = "";
+      $("childPin").value = "";
+      $("birthYear").value = "";
+      $("childAvatar").value = "🦁";
+
+      setMessage("childMessage", t("childSuccess"), "success");
+
+      await loadFamilies();
+    } catch (error) {
+      setMessage(
+        "childMessage",
+        t("childError") + " " + error.message
+      );
+    } finally {
+      $("createChildButton").disabled = false;
+      $("createChildButton").textContent = t("createChild");
+    }
+  });
+
   $("showFamilyForm").addEventListener("click", () => {
     $("familyListSection").classList.add("hidden");
     $("createFamilyCard").classList.remove("hidden");
+    clearMessage("familyMessage");
   });
 
   $("logoutButton").addEventListener("click", async () => {
     await db.auth.signOut();
     currentUser = null;
+    selectedFamilyId = null;
+    selectedFamilyName = "";
     showAuth();
   });
 
@@ -598,13 +1106,15 @@
       showAuth();
     }
 
-    db.auth.onAuthStateChange(async (event, session) => {
+    db.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
         currentUser = null;
+        selectedFamilyId = null;
+        selectedFamilyName = "";
         showAuth();
       } else if (event === "SIGNED_IN" && session?.user) {
         currentUser = session.user;
-        await showDashboard(session.user);
+        showDashboard(session.user);
       }
     });
   }
@@ -614,4 +1124,3 @@
 </script>
 </body>
 </html>
-
