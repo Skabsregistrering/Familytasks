@@ -1,542 +1,309 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FamilyTasks – Familien sammen</title>
-  <meta name="theme-color" content="#6758d8">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FamilyTasks – Familien sammen</title>
+<meta name="theme-color" content="#6758d8">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Inter, system-ui, -apple-system, sans-serif;
-      background: #f5f5fb;
-      color: #25243a;
-    }
-
-    button, input, select { font: inherit; }
-
-    .page {
-      width: min(100% - 32px, 1050px);
-      margin: auto;
-      padding: 28px 0 60px;
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 40px;
-      gap: 12px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      font-size: 22px;
-      font-weight: 850;
-      letter-spacing: -1px;
-    }
-
-    .logo {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      background: #6758d8;
-      color: white;
-      display: grid;
-      place-items: center;
-      font-size: 23px;
-    }
-
-    .top-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .language, .logout {
-      border: 1px solid #e5e3ef;
-      background: white;
-      padding: 9px 12px;
-      border-radius: 10px;
-      color: #444;
-      cursor: pointer;
-    }
-
-    .hero {
-      text-align: center;
-      max-width: 650px;
-      margin: 0 auto 35px;
-    }
-
-    .hero h1 {
-      font-size: clamp(32px, 6vw, 49px);
-      letter-spacing: -2px;
-      line-height: 1.08;
-      margin: 0 0 15px;
-    }
-
-    .hero p {
-      color: #77758a;
-      font-size: 17px;
-      line-height: 1.6;
-      margin: 0;
-    }
-
-    .card {
-      background: white;
-      border: 1px solid #eceaf3;
-      border-radius: 22px;
-      padding: 28px;
-      box-shadow: 0 12px 35px rgba(40,35,90,.06);
-      width: min(100%, 520px);
-      margin: 0 auto 20px;
-    }
-
-    .card h2 { margin: 0 0 8px; font-size: 24px; }
-
-    .sub {
-      color: #858296;
-      margin: 0 0 22px;
-      line-height: 1.5;
-    }
-
-    label {
-      display: block;
-      font-weight: 650;
-      font-size: 14px;
-      margin: 17px 0 7px;
-    }
-
-    input, select {
-      width: 100%;
-      border: 1px solid #e4e1ed;
-      background: #fff;
-      border-radius: 11px;
-      padding: 13px 14px;
-      outline: none;
-      color: #28263b;
-    }
-
-    input:focus, select:focus {
-      border-color: #7668e5;
-      box-shadow: 0 0 0 3px #7668e51c;
-    }
-
-    .primary {
-      width: 100%;
-      border: 0;
-      border-radius: 11px;
-      padding: 14px 18px;
-      margin-top: 22px;
-      background: #6758d8;
-      color: white;
-      font-weight: 750;
-      cursor: pointer;
-      transition: .2s;
-    }
-
-    .primary:hover { background: #5546c4; }
-    .primary:disabled { opacity: .55; cursor: wait; }
-
-    .secondary {
-      border: 1px solid #e4e1ed;
-      border-radius: 10px;
-      padding: 10px 14px;
-      background: white;
-      color: #6758d8;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .switch {
-      text-align: center;
-      margin-top: 20px;
-      color: #77758a;
-      font-size: 14px;
-    }
-
-    .link {
-      border: 0;
-      background: none;
-      color: #6758d8;
-      font-weight: 750;
-      cursor: pointer;
-      padding: 4px;
-    }
-
-    .message {
-      display: none;
-      padding: 12px 14px;
-      border-radius: 10px;
-      margin-top: 17px;
-      font-size: 14px;
-      line-height: 1.5;
-      overflow-wrap: anywhere;
-    }
-
-    .message.error {
-      display: block;
-      background: #fff0f0;
-      color: #a83232;
-    }
-
-    .message.success {
-      display: block;
-      background: #eaf8ef;
-      color: #207442;
-    }
-
-    .hidden { display: none !important; }
-
-    .dashboard { max-width: 900px; margin: auto; }
-
-    .welcome {
-      background: linear-gradient(120deg, #6758d8, #9487f1);
-      color: white;
-      border-radius: 22px;
-      padding: 28px;
-      margin-bottom: 22px;
-    }
-
-    .welcome h1 { margin: 0 0 8px; font-size: 30px; }
-    .welcome p { margin: 0; opacity: .88; }
-
-    .section-title {
-      margin: 28px 0 14px;
-      font-size: 23px;
-    }
-
-    .family-card {
-      background: white;
-      border: 1px solid #eceaf3;
-      border-radius: 18px;
-      padding: 22px;
-      margin-bottom: 15px;
-    }
-
-    .family-heading {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .family-heading h3 { margin: 0 0 7px; }
-
-    .muted { color: #858296; font-size: 14px; }
-
-    .selected-family {
-      border: 2px solid #6758d8;
-      background: #faf9ff;
-    }
-
-    .children-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .child-card {
-      background: #f7f6fc;
-      border: 1px solid #eceaf3;
-      border-radius: 15px;
-      padding: 17px;
-      display: flex;
-      align-items: center;
-      gap: 13px;
-    }
-
-    .avatar {
-      width: 52px;
-      height: 52px;
-      flex-shrink: 0;
-      border-radius: 16px;
-      background: #ebe8ff;
-      display: grid;
-      place-items: center;
-      font-size: 29px;
-    }
-
-    .child-card strong { display: block; margin-bottom: 4px; }
-    .child-card small { color: #858296; }
-
-    .empty-children {
-      color: #858296;
-      font-size: 14px;
-      padding: 12px 0;
-    }
-
-    .footer {
-      text-align: center;
-      color: #aaa7b7;
-      font-size: 12px;
-      margin-top: 35px;
-    }
-
-    @media(max-width: 600px) {
-      .page { width: min(100% - 22px, 1050px); padding-top: 17px; }
-      header { margin-bottom: 30px; }
-      .card { padding: 22px 18px; }
-      .hero p { font-size: 15px; }
-      .welcome { padding: 23px; }
-      .brand { font-size: 19px; }
-    }
-
-    .task-panel { max-width: 900px; margin: 0 auto 22px; }
-    .task-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
-    .task-form-grid .full { grid-column: 1 / -1; }
-    .task-child-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px; margin-top: 9px; }
-    .task-child-option { display: flex; align-items: center; gap: 9px; padding: 10px 12px; border: 1px solid #e8e5f0; border-radius: 11px; background: #faf9fd; font-size: 14px; }
-    .task-child-option input { width: auto; margin: 0; accent-color: #6758d8; }
-    .task-list { display: grid; gap: 11px; margin-top: 20px; }
-    .task-item { border: 1px solid #eceaf3; border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; gap: 14px; }
-    .task-item h4 { margin: 0 0 6px; font-size: 16px; }
-    .task-meta { color: #858296; font-size: 13px; line-height: 1.55; }
-    .task-item button { flex-shrink: 0; }
-    .task-empty { color: #858296; background: #faf9fd; border-radius: 12px; padding: 16px; font-size: 14px; }
-    .task-hint { color: #858296; font-size: 13px; margin-top: 7px; line-height: 1.45; }
-    @media(max-width: 600px) {
-      .task-form-grid { grid-template-columns: 1fr; }
-      .task-form-grid .full { grid-column: auto; }
-      .task-item { align-items: flex-start; flex-direction: column; }
-    }
-  </style>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Inter,system-ui,-apple-system,sans-serif;background:#f5f5fb;color:#25243a}
+button,input,select{font:inherit}
+.page{width:min(100% - 32px,1050px);margin:auto;padding:28px 0 60px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px;gap:12px}
+.brand{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:850;letter-spacing:-1px}
+.logo{width:42px;height:42px;border-radius:14px;background:#6758d8;color:white;display:grid;place-items:center;font-size:23px}
+.top-actions{display:flex;align-items:center;gap:10px}
+.language,.logout{border:1px solid #e5e3ef;background:white;padding:9px 12px;border-radius:10px;color:#444;cursor:pointer}
+.hero{text-align:center;max-width:650px;margin:0 auto 35px}
+.hero h1{font-size:clamp(32px,6vw,49px);letter-spacing:-2px;line-height:1.08;margin:0 0 15px}
+.hero p{color:#77758a;font-size:17px;line-height:1.6;margin:0}
+.card{background:white;border:1px solid #eceaf3;border-radius:22px;padding:28px;box-shadow:0 12px 35px rgba(40,35,90,.06);width:min(100%,520px);margin:0 auto 20px}
+.card h2{margin:0 0 8px;font-size:24px}
+.sub{color:#858296;margin:0 0 22px;line-height:1.5}
+label{display:block;font-weight:650;font-size:14px;margin:17px 0 7px}
+input,select{width:100%;border:1px solid #e4e1ed;background:#fff;border-radius:11px;padding:13px 14px;outline:none;color:#28263b}
+input:focus,select:focus{border-color:#7668e5;box-shadow:0 0 0 3px #7668e51c}
+.primary{width:100%;border:0;border-radius:11px;padding:14px 18px;margin-top:22px;background:#6758d8;color:white;font-weight:750;cursor:pointer;transition:.2s}
+.primary:hover{background:#5546c4}
+.primary:disabled{opacity:.55;cursor:wait}
+.secondary{border:1px solid #e4e1ed;border-radius:10px;padding:10px 14px;background:white;color:#6758d8;font-weight:700;cursor:pointer}
+.switch{text-align:center;margin-top:20px;color:#77758a;font-size:14px}
+.link{border:0;background:none;color:#6758d8;font-weight:750;cursor:pointer;padding:4px}
+.message{display:none;padding:12px 14px;border-radius:10px;margin-top:17px;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.message.error{display:block;background:#fff0f0;color:#a83232}
+.message.success{display:block;background:#eaf8ef;color:#207442}
+.hidden{display:none!important}
+.dashboard{max-width:900px;margin:auto}
+.welcome{background:linear-gradient(120deg,#6758d8,#9487f1);color:white;border-radius:22px;padding:28px;margin-bottom:22px}
+.welcome h1{margin:0 0 8px;font-size:30px}
+.welcome p{margin:0;opacity:.88}
+.section-title{margin:28px 0 14px;font-size:23px}
+.family-card{background:white;border:1px solid #eceaf3;border-radius:18px;padding:22px;margin-bottom:15px}
+.family-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.family-heading h3{margin:0 0 7px}
+.muted{color:#858296;font-size:14px}
+.selected-family{border:2px solid #6758d8;background:#faf9ff}
+.children-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:18px}
+.child-card{background:#f7f6fc;border:1px solid #eceaf3;border-radius:15px;padding:17px;display:flex;align-items:center;gap:13px}
+.avatar{width:52px;height:52px;flex-shrink:0;border-radius:16px;background:#ebe8ff;display:grid;place-items:center;font-size:29px}
+.child-card strong{display:block;margin-bottom:4px}
+.child-card small{color:#858296}
+.empty-children{color:#858296;font-size:14px;padding:12px 0}
+.footer{text-align:center;color:#aaa7b7;font-size:12px;margin-top:35px}
+.task-panel,.approval-panel{max-width:900px;margin:0 auto 22px}
+.task-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
+.task-form-grid .full{grid-column:1/-1}
+.task-child-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-top:9px}
+.task-child-option{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid #e8e5f0;border-radius:11px;background:#faf9fd;font-size:14px}
+.task-child-option input{width:auto;margin:0;accent-color:#6758d8}
+.task-list,.approval-list{display:grid;gap:11px;margin-top:20px}
+.task-item,.approval-item{border:1px solid #eceaf3;border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:center;gap:14px}
+.task-item h4,.approval-item h4{margin:0 0 6px;font-size:16px}
+.task-meta{color:#858296;font-size:13px;line-height:1.55}
+.task-item button{flex-shrink:0}
+.task-empty{color:#858296;background:#faf9fd;border-radius:12px;padding:16px;font-size:14px}
+.task-hint{color:#858296;font-size:13px;margin-top:7px;line-height:1.45}
+.approval-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.approval-count{background:#eeeaff;color:#6758d8;font-weight:800;border-radius:30px;padding:6px 12px;min-width:34px;text-align:center}
+.approval-actions{display:flex;gap:8px;flex-shrink:0}
+.approve-button,.reject-button{border:0;border-radius:9px;padding:10px 13px;font-weight:700;cursor:pointer}
+.approve-button{background:#e5f7eb;color:#207442}
+.reject-button{background:#fff0f0;color:#a83232}
+.approve-button:disabled,.reject-button:disabled{opacity:.5;cursor:wait}
+.history-title{margin:28px 0 0}
+.history-status{display:inline-block;margin-top:8px;padding:5px 9px;border-radius:8px;font-size:12px;font-weight:700}
+.history-status.approved{background:#e5f7eb;color:#207442}
+.history-status.rejected{background:#fff0f0;color:#a83232}
+@media(max-width:600px){
+.page{width:min(100% - 22px,1050px);padding-top:17px}
+header{margin-bottom:30px}
+.card{padding:22px 18px}
+.hero p{font-size:15px}
+.welcome{padding:23px}
+.brand{font-size:19px}
+.task-form-grid{grid-template-columns:1fr}
+.task-form-grid .full{grid-column:auto}
+.task-item,.approval-item{align-items:flex-start;flex-direction:column}
+.approval-actions{width:100%}
+.approval-actions button{flex:1}
+}
+</style>
 </head>
 
 <body>
 <div class="page">
 
-  <header>
-    <div class="brand">
-      <div class="logo">✦</div>
-      FamilyTasks
-    </div>
+<header>
+  <div class="brand">
+    <div class="logo">✦</div>
+    FamilyTasks
+  </div>
+  <div class="top-actions">
+    <select class="language" id="languageSelect" aria-label="Language">
+      <option value="da">Dansk</option>
+      <option value="en">English</option>
+    </select>
+    <button class="logout hidden" id="logoutButton">Log ud</button>
+  </div>
+</header>
 
-    <div class="top-actions">
-      <select class="language" id="languageSelect" aria-label="Language">
-        <option value="da">Dansk</option>
-        <option value="en">English</option>
+<section class="hero" id="hero">
+  <h1 id="heroTitle">Små opgaver. Store sejre.</h1>
+  <p id="heroText">Gør hverdagens opgaver sjovere, og hjælp børnene med at blive mere selvstændige.</p>
+</section>
+
+<main>
+<section class="card" id="authCard">
+  <h2 id="formTitle">Velkommen tilbage!</h2>
+  <p class="sub" id="formSubtitle">Log ind på din familiekonto.</p>
+  <form id="authForm">
+    <div id="nameField" class="hidden">
+      <label for="displayName" id="nameLabel">Dit navn</label>
+      <input id="displayName" type="text" autocomplete="name">
+    </div>
+    <label for="email" id="emailLabel">E-mail</label>
+    <input id="email" type="email" autocomplete="email" required>
+    <label for="password" id="passwordLabel">Adgangskode</label>
+    <input id="password" type="password" autocomplete="current-password" minlength="8" required>
+    <button class="primary" id="authButton" type="submit">Log ind</button>
+  </form>
+  <div class="message" id="authMessage"></div>
+  <div class="switch">
+    <span id="switchText">Har du ikke en konto?</span>
+    <button class="link" id="switchButton" type="button">Opret konto</button>
+  </div>
+</section>
+
+<section class="dashboard hidden" id="dashboard">
+  <div class="welcome">
+    <h1 id="welcomeTitle">Velkommen!</h1>
+    <p id="welcomeText">Lad os gøre familien klar til FamilyTasks.</p>
+  </div>
+
+  <section class="card" id="createFamilyCard">
+    <h2 id="familyTitle">Opret din familie</h2>
+    <p class="sub" id="familySubtitle">Start med at give familien et navn.</p>
+    <form id="familyForm">
+      <label for="familyName" id="familyNameLabel">Familiens navn</label>
+      <input id="familyName" type="text" placeholder="F.eks. Familien Jensen" required maxlength="80">
+      <label for="currency" id="currencyLabel">Valuta</label>
+      <select id="currency">
+        <option value="DKK">DKK – Danske kroner</option>
+        <option value="EUR">EUR – Euro</option>
+        <option value="USD">USD – US dollars</option>
+        <option value="GBP">GBP – British pounds</option>
+        <option value="SEK">SEK – Swedish kronor</option>
+        <option value="NOK">NOK – Norwegian kroner</option>
+        <option value="CHF">CHF – Swiss francs</option>
       </select>
-      <button class="logout hidden" id="logoutButton">Log ud</button>
-    </div>
-  </header>
-
-  <section class="hero" id="hero">
-    <h1 id="heroTitle">Små opgaver. Store sejre.</h1>
-    <p id="heroText">Gør hverdagens opgaver sjovere, og hjælp børnene med at blive mere selvstændige.</p>
+      <label for="timezone" id="timezoneLabel">Tidszone</label>
+      <select id="timezone">
+        <option value="Europe/Copenhagen">Copenhagen</option>
+        <option value="Europe/London">London</option>
+        <option value="Europe/Stockholm">Stockholm</option>
+        <option value="Europe/Oslo">Oslo</option>
+        <option value="Europe/Berlin">Berlin</option>
+        <option value="America/New_York">New York</option>
+        <option value="America/Los_Angeles">Los Angeles</option>
+        <option value="Asia/Dubai">Dubai</option>
+        <option value="Asia/Tokyo">Tokyo</option>
+        <option value="Australia/Sydney">Sydney</option>
+      </select>
+      <button class="primary" id="createFamilyButton" type="submit">Opret familie</button>
+    </form>
+    <div class="message" id="familyMessage"></div>
   </section>
 
-  <main>
-    <section class="card" id="authCard">
-      <h2 id="formTitle">Velkommen tilbage!</h2>
-      <p class="sub" id="formSubtitle">Log ind på din familiekonto.</p>
+  <section class="hidden" id="familyListSection">
+    <h2 class="section-title" id="myFamiliesTitle">Mine familier</h2>
+    <div id="familyList"></div>
 
-      <form id="authForm">
-        <div id="nameField" class="hidden">
-          <label for="displayName" id="nameLabel">Dit navn</label>
-          <input id="displayName" type="text" autocomplete="name">
-        </div>
-
-        <label for="email" id="emailLabel">E-mail</label>
-        <input id="email" type="email" autocomplete="email" required>
-
-        <label for="password" id="passwordLabel">Adgangskode</label>
-        <input id="password" type="password" autocomplete="current-password" minlength="8" required>
-
-        <button class="primary" id="authButton" type="submit">Log ind</button>
-      </form>
-
-      <div class="message" id="authMessage"></div>
-
-      <div class="switch">
-        <span id="switchText">Har du ikke en konto?</span>
-        <button class="link" id="switchButton" type="button">Opret konto</button>
+    <section class="card approval-panel" id="approvalPanel">
+      <div class="approval-header">
+        <h2 id="approvalTitle">Godkend opgaver</h2>
+        <span class="approval-count" id="approvalCount">0</span>
+      </div>
+      <p class="sub" id="approvalSubtitle">Se opgaver, børnene har markeret som udført.</p>
+      <div id="pendingApprovalList" class="approval-list">
+        <div class="task-empty">Henter opgaver...</div>
+      </div>
+      <div class="message" id="approvalMessage"></div>
+      <h3 class="history-title" id="approvalHistoryTitle">Seneste behandlinger</h3>
+      <div id="approvalHistoryList" class="approval-list">
+        <div class="task-empty">Henter historik...</div>
       </div>
     </section>
 
-    <section class="dashboard hidden" id="dashboard">
-      <div class="welcome">
-        <h1 id="welcomeTitle">Velkommen!</h1>
-        <p id="welcomeText">Lad os gøre familien klar til FamilyTasks.</p>
-      </div>
-
-      <section class="card" id="createFamilyCard">
-        <h2 id="familyTitle">Opret din familie</h2>
-        <p class="sub" id="familySubtitle">Start med at give familien et navn.</p>
-
-        <form id="familyForm">
-          <label for="familyName" id="familyNameLabel">Familiens navn</label>
-          <input id="familyName" type="text" placeholder="F.eks. Familien Jensen" required maxlength="80">
-
-          <label for="currency" id="currencyLabel">Valuta</label>
-          <select id="currency">
-            <option value="DKK">DKK – Danske kroner</option>
-            <option value="EUR">EUR – Euro</option>
-            <option value="USD">USD – US dollars</option>
-            <option value="GBP">GBP – British pounds</option>
-            <option value="SEK">SEK – Swedish kronor</option>
-            <option value="NOK">NOK – Norwegian kroner</option>
-            <option value="CHF">CHF – Swiss francs</option>
-          </select>
-
-          <label for="timezone" id="timezoneLabel">Tidszone</label>
-          <select id="timezone">
-            <option value="Europe/Copenhagen">Copenhagen</option>
-            <option value="Europe/London">London</option>
-            <option value="Europe/Stockholm">Stockholm</option>
-            <option value="Europe/Oslo">Oslo</option>
-            <option value="Europe/Berlin">Berlin</option>
-            <option value="America/New_York">New York</option>
-            <option value="America/Los_Angeles">Los Angeles</option>
-            <option value="Asia/Dubai">Dubai</option>
-            <option value="Asia/Tokyo">Tokyo</option>
-            <option value="Australia/Sydney">Sydney</option>
-          </select>
-
-          <button class="primary" id="createFamilyButton" type="submit">Opret familie</button>
-        </form>
-        <div class="message" id="familyMessage"></div>
-      </section>
-
-      <section class="hidden" id="familyListSection">
-        <h2 class="section-title" id="myFamiliesTitle">Mine familier</h2>
-        <div id="familyList"></div>
-
-
-        <section class="card task-panel" id="taskManagementCard">
-          <h2 id="taskManagementTitle">Opgavestyring</h2>
-          <p class="sub" id="taskManagementSubtitle">Opret opgaver, giv dem point, og vælg hvem der skal udføre dem.</p>
-          <form id="taskForm">
-            <div class="task-form-grid">
-              <div class="full">
-                <label for="taskTitle" id="taskTitleLabel">Opgavens navn</label>
-                <input id="taskTitle" type="text" maxlength="120" required placeholder="F.eks. Ryd dit legetøj op">
-              </div>
-              <div class="full">
-                <label for="taskDescription" id="taskDescriptionLabel">Beskrivelse (valgfrit)</label>
-                <input id="taskDescription" type="text" maxlength="500" placeholder="Hvad skal barnet gøre?">
-              </div>
-              <div>
-                <label for="taskPoints" id="taskPointsLabel">Point</label>
-                <input id="taskPoints" type="number" min="0" max="10000" step="1" value="10" required>
-              </div>
-              <div>
-                <label for="taskStars" id="taskStarsLabel">Stjerner</label>
-                <input id="taskStars" type="number" min="0" max="1000" step="1" value="1" required>
-              </div>
-              <div>
-                <label for="taskRecurrence" id="taskRecurrenceLabel">Gentagelse</label>
-                <select id="taskRecurrence">
-                  <option value="none">Ingen gentagelse</option>
-                  <option value="daily">Dagligt</option>
-                  <option value="weekly">Ugentligt</option>
-                </select>
-              </div>
-              <div>
-                <label for="taskSelectionType" id="taskSelectionLabel">Hvem vælger opgaven?</label>
-                <select id="taskSelectionType">
-                  <option value="self_select">Barnet vælger selv</option>
-                  <option value="assigned">Forældrene tildeler</option>
-                  <option value="both">Begge dele</option>
-                </select>
-              </div>
-              <div class="full" id="taskChildrenWrap">
-                <label id="taskChildrenLabel">Tildel til børn</label>
-                <div id="taskChildChoices" class="task-child-options"></div>
-                <div class="task-hint" id="taskChildrenHint">Vælg mindst ét barn ved tildelte opgaver.</div>
-              </div>
-              <div class="full">
-                <label for="taskCategory" id="taskCategoryLabel">Kategori (valgfrit)</label>
-                <input id="taskCategory" type="text" maxlength="60" placeholder="F.eks. Morgenrutine">
-              </div>
-              <div class="full">
-                <label class="task-child-option" style="margin-top:17px;">
-                  <input id="taskRequiresApproval" type="checkbox" checked>
-                  <span id="taskApprovalLabel">Kræver godkendelse fra en forælder</span>
-                </label>
-              </div>
-            </div>
-            <button class="primary" id="createTaskButton" type="submit">Opret opgave</button>
-          </form>
-          <div class="message" id="taskMessage"></div>
-          <h3 id="taskListTitle" style="margin:28px 0 0;">Aktive opgaver</h3>
-          <div id="taskList" class="task-list"><div class="task-empty">Henter opgaver...</div></div>
-        </section>
-
-        <section class="card" id="createChildCard">
-          <h2 id="childTitle">Opret et barn</h2>
-          <p class="sub" id="childSubtitle">Vælg en familie, og opret barnets profil.</p>
-
-          <div id="selectedFamilyText" class="muted"></div>
-
-          <form id="childForm">
-            <label for="childName" id="childNameLabel">Barnets navn</label>
-            <input id="childName" type="text" maxlength="60" required placeholder="Barnets navn">
-
-            <label for="childAvatar" id="childAvatarLabel">Vælg avatar</label>
-            <select id="childAvatar">
-              <option value="🦁">🦁 Løve</option>
-              <option value="🐻">🐻 Bjørn</option>
-              <option value="🐼">🐼 Panda</option>
-              <option value="🦊">🦊 Ræv</option>
-              <option value="🐸">🐸 Frø</option>
-              <option value="🐯">🐯 Tiger</option>
-              <option value="🐵">🐵 Abe</option>
-              <option value="🐰">🐰 Kanin</option>
-              <option value="🦄">🦄 Enhjørning</option>
-              <option value="🚀">🚀 Raket</option>
-              <option value="⚽">⚽ Fodbold</option>
-              <option value="⭐">⭐ Stjerne</option>
+    <section class="card task-panel" id="taskManagementCard">
+      <h2 id="taskManagementTitle">Opgavestyring</h2>
+      <p class="sub" id="taskManagementSubtitle">Opret opgaver, giv dem point, og vælg hvem der skal udføre dem.</p>
+      <form id="taskForm">
+        <div class="task-form-grid">
+          <div class="full">
+            <label for="taskTitle" id="taskTitleLabel">Opgavens navn</label>
+            <input id="taskTitle" type="text" maxlength="120" required placeholder="F.eks. Ryd dit legetøj op">
+          </div>
+          <div class="full">
+            <label for="taskDescription" id="taskDescriptionLabel">Beskrivelse (valgfrit)</label>
+            <input id="taskDescription" type="text" maxlength="500" placeholder="Hvad skal barnet gøre?">
+          </div>
+          <div>
+            <label for="taskPoints" id="taskPointsLabel">Point</label>
+            <input id="taskPoints" type="number" min="0" max="10000" step="1" value="10" required>
+          </div>
+          <div>
+            <label for="taskStars" id="taskStarsLabel">Stjerner</label>
+            <input id="taskStars" type="number" min="0" max="1000" step="1" value="1" required>
+          </div>
+          <div>
+            <label for="taskRecurrence" id="taskRecurrenceLabel">Gentagelse</label>
+            <select id="taskRecurrence">
+              <option value="none">Ingen gentagelse</option>
+              <option value="daily">Dagligt</option>
+              <option value="weekly">Ugentligt</option>
             </select>
-
-            <label for="birthYear" id="birthYearLabel">Fødselsår (valgfrit)</label>
-            <input id="birthYear" type="number" min="2000" max="2035" placeholder="F.eks. 2019">
-
-            <label for="childPin" id="childPinLabel">Barnets 4-cifrede PIN-kode</label>
-            <input
-              id="childPin"
-              type="password"
-              inputmode="numeric"
-              pattern="[0-9]{4}"
-              maxlength="4"
-              minlength="4"
-              autocomplete="new-password"
-              required
-              placeholder="••••"
-            >
-
-            <button class="primary" id="createChildButton" type="submit">Opret barn</button>
-          </form>
-
-          <div class="message" id="childMessage"></div>
-        </section>
-
-        <div class="family-card">
-          <h3 id="anotherFamilyTitle">Opret endnu en familie</h3>
-          <p class="muted" id="anotherFamilyText">Du kan oprette flere familier på samme konto.</p>
-          <button class="secondary" id="showFamilyForm" type="button">Opret familie</button>
+          </div>
+          <div>
+            <label for="taskSelectionType" id="taskSelectionLabel">Hvem vælger opgaven?</label>
+            <select id="taskSelectionType">
+              <option value="self_select">Barnet vælger selv</option>
+              <option value="assigned">Forældrene tildeler</option>
+              <option value="both">Begge dele</option>
+            </select>
+          </div>
+          <div class="full" id="taskChildrenWrap">
+            <label id="taskChildrenLabel">Tildel til børn</label>
+            <div id="taskChildChoices" class="task-child-options"></div>
+            <div class="task-hint" id="taskChildrenHint">Vælg mindst ét barn ved tildelte opgaver.</div>
+          </div>
+          <div class="full">
+            <label for="taskCategory" id="taskCategoryLabel">Kategori (valgfrit)</label>
+            <input id="taskCategory" type="text" maxlength="60" placeholder="F.eks. Morgenrutine">
+          </div>
+          <div class="full">
+            <label class="task-child-option" style="margin-top:17px;">
+              <input id="taskRequiresApproval" type="checkbox" checked>
+              <span id="taskApprovalLabel">Kræver godkendelse fra en forælder</span>
+            </label>
+          </div>
         </div>
-      </section>
+        <button class="primary" id="createTaskButton" type="submit">Opret opgave</button>
+      </form>
+      <div class="message" id="taskMessage"></div>
+      <h3 id="taskListTitle" style="margin:28px 0 0;">Aktive opgaver</h3>
+      <div id="taskList" class="task-list"><div class="task-empty">Henter opgaver...</div></div>
     </section>
-  </main>
 
-  <div class="footer">FamilyTasks · Made for families everywhere</div>
+    <section class="card" id="createChildCard">
+      <h2 id="childTitle">Opret et barn</h2>
+      <p class="sub" id="childSubtitle">Vælg en familie, og opret barnets profil.</p>
+      <div id="selectedFamilyText" class="muted"></div>
+      <form id="childForm">
+        <label for="childName" id="childNameLabel">Barnets navn</label>
+        <input id="childName" type="text" maxlength="60" required placeholder="Barnets navn">
+        <label for="childAvatar" id="childAvatarLabel">Vælg avatar</label>
+        <select id="childAvatar">
+          <option value="🦁">🦁 Løve</option>
+          <option value="🐻">🐻 Bjørn</option>
+          <option value="🐼">🐼 Panda</option>
+          <option value="🦊">🦊 Ræv</option>
+          <option value="🐸">🐸 Frø</option>
+          <option value="🐯">🐯 Tiger</option>
+          <option value="🐵">🐵 Abe</option>
+          <option value="🐰">🐰 Kanin</option>
+          <option value="🦄">🦄 Enhjørning</option>
+          <option value="🚀">🚀 Raket</option>
+          <option value="⚽">⚽ Fodbold</option>
+          <option value="⭐">⭐ Stjerne</option>
+        </select>
+        <label for="birthYear" id="birthYearLabel">Fødselsår (valgfrit)</label>
+        <input id="birthYear" type="number" min="2000" max="2035" placeholder="F.eks. 2019">
+        <label for="childPin" id="childPinLabel">Barnets 4-cifrede PIN-kode</label>
+        <input id="childPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" minlength="4" autocomplete="new-password" required placeholder="••••">
+        <button class="primary" id="createChildButton" type="submit">Opret barn</button>
+      </form>
+      <div class="message" id="childMessage"></div>
+    </section>
+
+    <div class="family-card">
+      <h3 id="anotherFamilyTitle">Opret endnu en familie</h3>
+      <p class="muted" id="anotherFamilyText">Du kan oprette flere familier på samme konto.</p>
+      <button class="secondary" id="showFamilyForm" type="button">Opret familie</button>
+    </div>
+  </section>
+</section>
+</main>
+
+<div class="footer">FamilyTasks · Made for families everywhere</div>
 </div>
 
 <script>
 (() => {
   const SUPABASE_URL = "https://bhupbdwybahlkssweiht.supabase.co";
   const SUPABASE_KEY = "sb_publishable_kTdbLZD9UmNZ_bsxSUhivQ_8bIOJ-Wa";
-
   const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   let isSignup = false;
@@ -545,929 +312,926 @@
   let selectedFamilyName = "";
   let familiesCache = [];
   let childrenCache = [];
-
   let currentLanguage = localStorage.getItem("familytasks_language") || "da";
 
   const translations = {
     da: {
-      heroTitle: "Små opgaver. Store sejre.",
-      heroText: "Gør hverdagens opgaver sjovere, og hjælp børnene med at blive mere selvstændige.",
-      loginTitle: "Velkommen tilbage!",
-      loginSubtitle: "Log ind på din familiekonto.",
-      signupTitle: "Opret din konto",
-      signupSubtitle: "Kom i gang og skab en gladere hverdag.",
-      name: "Dit navn",
-      email: "E-mail",
-      password: "Adgangskode",
-      login: "Log ind",
-      signup: "Opret konto",
-      noAccount: "Har du ikke en konto?",
-      hasAccount: "Har du allerede en konto?",
-      welcome: "Velkommen!",
-      welcomeText: "Lad os gøre familien klar til FamilyTasks.",
-      createFamily: "Opret din familie",
-      familySubtitle: "Start med at give familien et navn. Du kan ændre indstillinger senere.",
-      familyName: "Familiens navn",
-      currency: "Valuta",
-      timezone: "Tidszone",
-      createButton: "Opret familie",
-      myFamilies: "Mine familier",
-      anotherFamily: "Opret endnu en familie",
-      anotherText: "Du kan oprette flere familier på samme konto.",
-      logout: "Log ud",
-      loginSuccess: "Du er logget ind.",
-      signupSuccess: "Din konto er oprettet.",
-      familySuccess: "Familien er oprettet!",
-      loading: "Vent venligst...",
-      invalid: "Kontrollér dine oplysninger, og prøv igen.",
-      familyError: "Kunne ikke oprette familien. Prøv igen.",
-      authError: "Der opstod en fejl. Kontrollér e-mail og adgangskode.",
-      confirmEmail: "Kontoen er oprettet. Bekræft din e-mail via linket, før du logger ind.",
-      role: "Din rolle",
-      owner: "Ejer",
-      chooseFamily: "Vælg familie",
-      selected: "Valgt familie",
-      childTitle: "Opret et barn",
-      childSubtitle: "Vælg en familie, og opret barnets profil.",
-      childName: "Barnets navn",
-      childAvatar: "Vælg avatar",
-      birthYear: "Fødselsår (valgfrit)",
-      childPin: "Barnets 4-cifrede PIN-kode",
-      createChild: "Opret barn",
-      childSuccess: "Barnets profil er oprettet!",
-      childError: "Kunne ikke oprette barnets profil.",
-      children: "Børn",
-      noChildren: "Der er endnu ikke oprettet børn i denne familie.",
-      childLoading: "Opretter barn...",
-      noFamilySelected: "Vælg først en familie ovenfor.",
-      childPinError: "PIN-koden skal bestå af præcis 4 cifre.",
-      yearError: "Indtast et gyldigt fødselsår.",
-      loadError: "Kunne ikke hente familiens oplysninger.",
-      familyEmpty: "Du har endnu ikke oprettet en familie.",
-      familyCreated: "Familien er oprettet.",
-      taskManagementTitle: "Opgavestyring",
-      taskManagementSubtitle: "Opret opgaver, giv dem point, og vælg hvem der skal udføre dem.",
-      taskTitle: "Opgavens navn",
-      taskDescription: "Beskrivelse (valgfrit)",
-      taskPoints: "Point",
-      taskStars: "Stjerner",
-      taskRecurrence: "Gentagelse",
-      taskSelection: "Hvem vælger opgaven?",
-      taskChildren: "Tildel til børn",
-      taskChildrenHint: "Vælg mindst ét barn ved tildelte opgaver.",
-      taskCategory: "Kategori (valgfrit)",
-      taskApproval: "Kræver godkendelse fra en forælder",
-      createTask: "Opret opgave",
-      taskList: "Aktive opgaver",
-      noTasks: "Der er endnu ikke oprettet opgaver.",
-      noChildrenForTasks: "Opret først et barn, før du kan tildele opgaver.",
-      chooseChild: "Vælg mindst ét barn til denne opgave.",
-      taskSuccess: "Opgaven er oprettet!",
-      taskError: "Kunne ikke oprette opgaven.",
-      taskLoading: "Opretter opgave...",
-      taskDeactivate: "Deaktivér",
-      taskDeactivated: "Opgaven er deaktiveret.",
-      taskDeactivateError: "Kunne ikke deaktivere opgaven.",
-      assigned: "Tildelt",
-      selfSelect: "Barnet vælger selv",
-      both: "Begge dele",
-      daily: "Dagligt",
-      weekly: "Ugentligt",
-      once: "Ingen gentagelse",
-      approvalYes: "Forældregodkendelse",
-      approvalNo: "Ingen godkendelse",
-      childrenNone: "Ingen børn valgt"
+      heroTitle:"Små opgaver. Store sejre.",
+      heroText:"Gør hverdagens opgaver sjovere, og hjælp børnene med at blive mere selvstændige.",
+      loginTitle:"Velkommen tilbage!",
+      loginSubtitle:"Log ind på din familiekonto.",
+      signupTitle:"Opret din konto",
+      signupSubtitle:"Kom i gang og skab en gladere hverdag.",
+      name:"Dit navn",email:"E-mail",password:"Adgangskode",
+      login:"Log ind",signup:"Opret konto",
+      noAccount:"Har du ikke en konto?",hasAccount:"Har du allerede en konto?",
+      welcome:"Velkommen!",welcomeText:"Lad os gøre familien klar til FamilyTasks.",
+      createFamily:"Opret din familie",
+      familySubtitle:"Start med at give familien et navn. Du kan ændre indstillinger senere.",
+      familyName:"Familiens navn",currency:"Valuta",timezone:"Tidszone",
+      createButton:"Opret familie",myFamilies:"Mine familier",
+      anotherFamily:"Opret endnu en familie",
+      anotherText:"Du kan oprette flere familier på samme konto.",
+      logout:"Log ud",loginSuccess:"Du er logget ind.",
+      signupSuccess:"Din konto er oprettet.",familySuccess:"Familien er oprettet!",
+      loading:"Vent venligst...",invalid:"Kontrollér dine oplysninger, og prøv igen.",
+      familyError:"Kunne ikke oprette familien. Prøv igen.",
+      authError:"Der opstod en fejl. Kontrollér e-mail og adgangskode.",
+      confirmEmail:"Kontoen er oprettet. Bekræft din e-mail via linket, før du logger ind.",
+      role:"Din rolle",owner:"Ejer",chooseFamily:"Vælg familie",selected:"Valgt familie",
+      childTitle:"Opret et barn",childSubtitle:"Vælg en familie, og opret barnets profil.",
+      childName:"Barnets navn",childAvatar:"Vælg avatar",birthYear:"Fødselsår (valgfrit)",
+      childPin:"Barnets 4-cifrede PIN-kode",createChild:"Opret barn",
+      childSuccess:"Barnets profil er oprettet!",
+      childError:"Kunne ikke oprette barnets profil.",
+      children:"Børn",noChildren:"Der er endnu ikke oprettet børn i denne familie.",
+      childLoading:"Opretter barn...",noFamilySelected:"Vælg først en familie ovenfor.",
+      childPinError:"PIN-koden skal bestå af præcis 4 cifre.",
+      yearError:"Indtast et gyldigt fødselsår.",
+      loadError:"Kunne ikke hente familiens oplysninger.",
+      taskManagementTitle:"Opgavestyring",
+      taskManagementSubtitle:"Opret opgaver, giv dem point, og vælg hvem der skal udføre dem.",
+      taskTitle:"Opgavens navn",taskDescription:"Beskrivelse (valgfrit)",
+      taskPoints:"Point",taskStars:"Stjerner",taskRecurrence:"Gentagelse",
+      taskSelection:"Hvem vælger opgaven?",taskChildren:"Tildel til børn",
+      taskChildrenHint:"Vælg mindst ét barn ved tildelte opgaver.",
+      taskCategory:"Kategori (valgfrit)",
+      taskApproval:"Kræver godkendelse fra en forælder",
+      createTask:"Opret opgave",taskList:"Aktive opgaver",
+      noTasks:"Der er endnu ikke oprettet opgaver.",
+      noChildrenForTasks:"Opret først et barn, før du kan tildele opgaver.",
+      chooseChild:"Vælg mindst ét barn til denne opgave.",
+      taskSuccess:"Opgaven er oprettet!",taskError:"Kunne ikke oprette opgaven.",
+      taskLoading:"Opretter opgave...",taskDeactivate:"Deaktivér",
+      taskDeactivated:"Opgaven er deaktiveret.",
+      taskDeactivateError:"Kunne ikke deaktivere opgaven.",
+      assigned:"Tildelt",selfSelect:"Barnet vælger selv",both:"Begge dele",
+      daily:"Dagligt",weekly:"Ugentligt",once:"Ingen gentagelse",
+      approvalYes:"Forældregodkendelse",approvalNo:"Ingen godkendelse",
+      approvalTitle:"Godkend opgaver",
+      approvalSubtitle:"Se opgaver, børnene har markeret som udført.",
+      approvalHistoryTitle:"Seneste behandlinger",
+      approvalLoading:"Henter opgaver...",
+      approvalEmpty:"Ingen opgaver afventer godkendelse.",
+      approvalHistoryEmpty:"Der er endnu ingen behandlede opgaver.",
+      approvalError:"Kunne ikke hente opgaver til godkendelse:",
+      approvalApprove:"Godkend",approvalReject:"Afvis",
+      approvalApproved:"Godkendt",approvalRejected:"Afvist",
+      approvalSuccess:"Opgaven er behandlet.",
+      approvalActionError:"Kunne ikke behandle opgaven:",
+      approvalChild:"Barn",approvalReward:"Belønning"
     },
     en: {
-      heroTitle: "Small tasks. Big achievements.",
-      heroText: "Make everyday chores fun and help children become more independent.",
-      loginTitle: "Welcome back!",
-      loginSubtitle: "Log in to your family account.",
-      signupTitle: "Create your account",
-      signupSubtitle: "Get started and create a happier everyday life.",
-      name: "Your name",
-      email: "Email",
-      password: "Password",
-      login: "Log in",
-      signup: "Create account",
-      noAccount: "Don't have an account?",
-      hasAccount: "Already have an account?",
-      welcome: "Welcome!",
-      welcomeText: "Let's get your family started with FamilyTasks.",
-      createFamily: "Create your family",
-      familySubtitle: "Start by giving your family a name. You can change settings later.",
-      familyName: "Family name",
-      currency: "Currency",
-      timezone: "Time zone",
-      createButton: "Create family",
-      myFamilies: "My families",
-      anotherFamily: "Create another family",
-      anotherText: "You can create multiple families on one account.",
-      logout: "Log out",
-      loginSuccess: "You are logged in.",
-      signupSuccess: "Your account has been created.",
-      familySuccess: "Family created!",
-      loading: "Please wait...",
-      invalid: "Check your details and try again.",
-      familyError: "Could not create family. Please try again.",
-      authError: "An error occurred. Check your email and password.",
-      confirmEmail: "Account created. Confirm your email using the link before logging in.",
-      role: "Your role",
-      owner: "Owner",
-      chooseFamily: "Select family",
-      selected: "Selected family",
-      childTitle: "Create a child",
-      childSubtitle: "Choose a family and create the child's profile.",
-      childName: "Child's name",
-      childAvatar: "Choose avatar",
-      birthYear: "Birth year (optional)",
-      childPin: "Child's 4-digit PIN",
-      createChild: "Create child",
-      childSuccess: "Child profile created!",
-      childError: "Could not create the child profile.",
-      children: "Children",
-      noChildren: "No children have been added to this family yet.",
-      childLoading: "Creating child...",
-      noFamilySelected: "Select a family above first.",
-      childPinError: "The PIN must contain exactly 4 digits.",
-      yearError: "Enter a valid birth year.",
-      loadError: "Could not load family information.",
-      familyEmpty: "You have not created a family yet.",
-      familyCreated: "Family created.",
-      taskManagementTitle: "Task management",
-      taskManagementSubtitle: "Create tasks, award points, and choose who should complete them.",
-      taskTitle: "Task name",
-      taskDescription: "Description (optional)",
-      taskPoints: "Points",
-      taskStars: "Stars",
-      taskRecurrence: "Repeat",
-      taskSelection: "Who chooses the task?",
-      taskChildren: "Assign to children",
-      taskChildrenHint: "Select at least one child for assigned tasks.",
-      taskCategory: "Category (optional)",
-      taskApproval: "Requires approval from a parent",
-      createTask: "Create task",
-      taskList: "Active tasks",
-      noTasks: "No tasks have been created yet.",
-      noChildrenForTasks: "Create a child first before assigning tasks.",
-      chooseChild: "Select at least one child for this task.",
-      taskSuccess: "Task created!",
-      taskError: "Could not create the task.",
-      taskLoading: "Creating task...",
-      taskDeactivate: "Deactivate",
-      taskDeactivated: "Task deactivated.",
-      taskDeactivateError: "Could not deactivate the task.",
-      assigned: "Assigned",
-      selfSelect: "Child chooses",
-      both: "Both",
-      daily: "Daily",
-      weekly: "Weekly",
-      once: "No repeat",
-      approvalYes: "Parent approval required",
-      approvalNo: "No approval required",
-      childrenNone: "No children selected"
+      heroTitle:"Small tasks. Big achievements.",
+      heroText:"Make everyday chores fun and help children become more independent.",
+      loginTitle:"Welcome back!",loginSubtitle:"Log in to your family account.",
+      signupTitle:"Create your account",
+      signupSubtitle:"Get started and create a happier everyday life.",
+      name:"Your name",email:"Email",password:"Password",
+      login:"Log in",signup:"Create account",
+      noAccount:"Don't have an account?",hasAccount:"Already have an account?",
+      welcome:"Welcome!",welcomeText:"Let's get your family started with FamilyTasks.",
+      createFamily:"Create your family",
+      familySubtitle:"Start by giving your family a name. You can change settings later.",
+      familyName:"Family name",currency:"Currency",timezone:"Time zone",
+      createButton:"Create family",myFamilies:"My families",
+      anotherFamily:"Create another family",
+      anotherText:"You can create multiple families on one account.",
+      logout:"Log out",loginSuccess:"You are logged in.",
+      signupSuccess:"Your account has been created.",familySuccess:"Family created!",
+      loading:"Please wait...",invalid:"Check your details and try again.",
+      familyError:"Could not create family. Please try again.",
+      authError:"An error occurred. Check your email and password.",
+      confirmEmail:"Account created. Confirm your email using the link before logging in.",
+      role:"Your role",owner:"Owner",chooseFamily:"Select family",selected:"Selected family",
+      childTitle:"Create a child",
+      childSubtitle:"Choose a family and create the child's profile.",
+      childName:"Child's name",childAvatar:"Choose avatar",
+      birthYear:"Birth year (optional)",childPin:"Child's 4-digit PIN",
+      createChild:"Create child",childSuccess:"Child profile created!",
+      childError:"Could not create the child profile.",children:"Children",
+      noChildren:"No children have been added to this family yet.",
+      childLoading:"Creating child...",noFamilySelected:"Select a family above first.",
+      childPinError:"The PIN must contain exactly 4 digits.",
+      yearError:"Enter a valid birth year.",
+      loadError:"Could not load family information.",
+      taskManagementTitle:"Task management",
+      taskManagementSubtitle:"Create tasks, award points, and choose who should complete them.",
+      taskTitle:"Task name",taskDescription:"Description (optional)",
+      taskPoints:"Points",taskStars:"Stars",taskRecurrence:"Repeat",
+      taskSelection:"Who chooses the task?",taskChildren:"Assign to children",
+      taskChildrenHint:"Select at least one child for assigned tasks.",
+      taskCategory:"Category (optional)",
+      taskApproval:"Requires approval from a parent",
+      createTask:"Create task",taskList:"Active tasks",
+      noTasks:"No tasks have been created yet.",
+      noChildrenForTasks:"Create a child first before assigning tasks.",
+      chooseChild:"Select at least one child for this task.",
+      taskSuccess:"Task created!",taskError:"Could not create the task.",
+      taskLoading:"Creating task...",taskDeactivate:"Deactivate",
+      taskDeactivated:"Task deactivated.",
+      taskDeactivateError:"Could not deactivate the task.",
+      assigned:"Assigned",selfSelect:"Child chooses",both:"Both",
+      daily:"Daily",weekly:"Weekly",once:"No repeat",
+      approvalYes:"Parent approval required",approvalNo:"No approval required",
+      approvalTitle:"Approve tasks",
+      approvalSubtitle:"Review tasks children have marked as completed.",
+      approvalHistoryTitle:"Recent decisions",
+      approvalLoading:"Loading tasks...",
+      approvalEmpty:"No tasks are awaiting approval.",
+      approvalHistoryEmpty:"There are no reviewed tasks yet.",
+      approvalError:"Could not load tasks for approval:",
+      approvalApprove:"Approve",approvalReject:"Reject",
+      approvalApproved:"Approved",approvalRejected:"Rejected",
+      approvalSuccess:"The task has been reviewed.",
+      approvalActionError:"Could not review the task:",
+      approvalChild:"Child",approvalReward:"Reward"
     }
   };
 
   const $ = id => document.getElementById(id);
   const t = key => translations[currentLanguage][key] || key;
 
-  function setMessage(id, message, type = "error") {
-    const el = $(id);
-    el.textContent = message;
-    el.className = "message " + type;
+  function setMessage(id,message,type="error"){
+    const el=$(id);
+    el.textContent=message;
+    el.className="message "+type;
   }
 
-  function clearMessage(id) {
-    const el = $(id);
-    el.textContent = "";
-    el.className = "message";
+  function clearMessage(id){
+    const el=$(id);
+    el.textContent="";
+    el.className="message";
   }
 
-  function updateLanguage() {
-    document.documentElement.lang = currentLanguage;
-    $("languageSelect").value = currentLanguage;
+  function makeTextElement(tag,text,className){
+    const el=document.createElement(tag);
+    el.textContent=text;
+    if(className)el.className=className;
+    return el;
+  }
 
-    $("heroTitle").textContent = t("heroTitle");
-    $("heroText").textContent = t("heroText");
-    $("emailLabel").textContent = t("email");
-    $("passwordLabel").textContent = t("password");
-    $("nameLabel").textContent = t("name");
-    $("welcomeText").textContent = t("welcomeText");
+  function updateLanguage(){
+    document.documentElement.lang=currentLanguage;
+    $("languageSelect").value=currentLanguage;
 
-    $("familyTitle").textContent = t("createFamily");
-    $("familySubtitle").textContent = t("familySubtitle");
-    $("familyNameLabel").textContent = t("familyName");
-    $("currencyLabel").textContent = t("currency");
-    $("timezoneLabel").textContent = t("timezone");
-    $("myFamiliesTitle").textContent = t("myFamilies");
-    $("anotherFamilyTitle").textContent = t("anotherFamily");
-    $("anotherFamilyText").textContent = t("anotherText");
-    $("logoutButton").textContent = t("logout");
+    const ids={
+      heroTitle:"heroTitle",heroText:"heroText",
+      emailLabel:"email",passwordLabel:"password",nameLabel:"name",
+      welcomeText:"welcomeText",familyTitle:"createFamily",
+      familySubtitle:"familySubtitle",familyNameLabel:"familyName",
+      currencyLabel:"currency",timezoneLabel:"timezone",
+      myFamiliesTitle:"myFamilies",anotherFamilyTitle:"anotherFamily",
+      anotherFamilyText:"anotherText",logoutButton:"logout",
+      childTitle:"childTitle",childSubtitle:"childSubtitle",
+      childNameLabel:"childName",childAvatarLabel:"childAvatar",
+      birthYearLabel:"birthYear",childPinLabel:"childPin",
+      taskManagementTitle:"taskManagementTitle",
+      taskManagementSubtitle:"taskManagementSubtitle",
+      taskTitleLabel:"taskTitle",taskDescriptionLabel:"taskDescription",
+      taskPointsLabel:"taskPoints",taskStarsLabel:"taskStars",
+      taskRecurrenceLabel:"taskRecurrence",taskSelectionLabel:"taskSelection",
+      taskChildrenLabel:"taskChildren",taskChildrenHint:"taskChildrenHint",
+      taskCategoryLabel:"taskCategory",taskApprovalLabel:"taskApproval",
+      taskListTitle:"taskList",approvalTitle:"approvalTitle",
+      approvalSubtitle:"approvalSubtitle",
+      approvalHistoryTitle:"approvalHistoryTitle"
+    };
 
-    $("childTitle").textContent = t("childTitle");
-    $("childSubtitle").textContent = t("childSubtitle");
-    $("childNameLabel").textContent = t("childName");
-    $("childAvatarLabel").textContent = t("childAvatar");
-    $("birthYearLabel").textContent = t("birthYear");
-    $("childPinLabel").textContent = t("childPin");
+    Object.entries(ids).forEach(([id,key])=>$(id).textContent=t(key));
 
-    $("taskManagementTitle").textContent = t("taskManagementTitle");
-    $("taskManagementSubtitle").textContent = t("taskManagementSubtitle");
-    $("taskTitleLabel").textContent = t("taskTitle");
-    $("taskDescriptionLabel").textContent = t("taskDescription");
-    $("taskPointsLabel").textContent = t("taskPoints");
-    $("taskStarsLabel").textContent = t("taskStars");
-    $("taskRecurrenceLabel").textContent = t("taskRecurrence");
-    $("taskSelectionLabel").textContent = t("taskSelection");
-    $("taskChildrenLabel").textContent = t("taskChildren");
-    $("taskChildrenHint").textContent = t("taskChildrenHint");
-    $("taskCategoryLabel").textContent = t("taskCategory");
-    $("taskApprovalLabel").textContent = t("taskApproval");
-    $("createTaskButton").textContent = t("createTask");
-    $("taskListTitle").textContent = t("taskList");
-    $("taskRecurrence").options[0].textContent = t("once");
-    $("taskRecurrence").options[1].textContent = t("daily");
-    $("taskRecurrence").options[2].textContent = t("weekly");
-    $("taskSelectionType").options[0].textContent = t("selfSelect");
-    $("taskSelectionType").options[1].textContent = t("assigned");
-    $("taskSelectionType").options[2].textContent = t("both");
+    $("taskRecurrence").options[0].textContent=t("once");
+    $("taskRecurrence").options[1].textContent=t("daily");
+    $("taskRecurrence").options[2].textContent=t("weekly");
+    $("taskSelectionType").options[0].textContent=t("selfSelect");
+    $("taskSelectionType").options[1].textContent=t("assigned");
+    $("taskSelectionType").options[2].textContent=t("both");
 
-    $("formTitle").textContent = t(isSignup ? "signupTitle" : "loginTitle");
-    $("formSubtitle").textContent = t(isSignup ? "signupSubtitle" : "loginSubtitle");
-    $("authButton").textContent = t(isSignup ? "signup" : "login");
-    $("switchText").textContent = t(isSignup ? "hasAccount" : "noAccount");
-    $("switchButton").textContent = t(isSignup ? "login" : "signup");
+    $("formTitle").textContent=t(isSignup?"signupTitle":"loginTitle");
+    $("formSubtitle").textContent=t(isSignup?"signupSubtitle":"loginSubtitle");
+    $("authButton").textContent=t(isSignup?"signup":"login");
+    $("switchText").textContent=t(isSignup?"hasAccount":"noAccount");
+    $("switchButton").textContent=t(isSignup?"login":"signup");
+    $("nameField").classList.toggle("hidden",!isSignup);
+    $("createFamilyButton").textContent=t("createButton");
+    $("createChildButton").textContent=t("createChild");
+    $("showFamilyForm").textContent=t("createButton");
+    $("createTaskButton").textContent=t("createTask");
 
-    $("nameField").classList.toggle("hidden", !isSignup);
-    $("createFamilyButton").textContent = t("createButton");
-    $("createChildButton").textContent = t("createChild");
-    $("showFamilyForm").textContent = t("createButton");
-
-    if (selectedFamilyName) {
-      $("selectedFamilyText").textContent = t("selected") + ": " + selectedFamilyName;
+    if(selectedFamilyName){
+      $("selectedFamilyText").textContent=t("selected")+": "+selectedFamilyName;
     }
   }
 
-  function showAuth() {
+  function showAuth(){
     $("authCard").classList.remove("hidden");
     $("dashboard").classList.add("hidden");
     $("hero").classList.remove("hidden");
     $("logoutButton").classList.add("hidden");
   }
 
-  async function showDashboard(user) {
-    currentUser = user;
+  async function showDashboard(user){
+    currentUser=user;
     $("authCard").classList.add("hidden");
     $("hero").classList.add("hidden");
     $("dashboard").classList.remove("hidden");
     $("logoutButton").classList.remove("hidden");
-
-    $("welcomeTitle").textContent =
-      t("welcome") + " " +
-      (user.user_metadata?.display_name || user.email.split("@")[0]) + "!";
-
-    $("welcomeText").textContent = t("welcomeText");
-
+    $("welcomeTitle").textContent=t("welcome")+" "+
+      (user.user_metadata?.display_name||user.email.split("@")[0])+"!";
+    $("welcomeText").textContent=t("welcomeText");
     await loadFamilies();
   }
 
-  function makeTextElement(tag, text, className) {
-    const el = document.createElement(tag);
-    el.textContent = text;
-    if (className) el.className = className;
-    return el;
-  }
-
-  async function loadFamilies() {
+  async function loadFamilies(){
     clearMessage("familyMessage");
     clearMessage("childMessage");
-
     $("familyListSection").classList.add("hidden");
     $("createFamilyCard").classList.remove("hidden");
 
-    const { data: memberships, error: memberError } = await db
+    const {data:memberships,error:memberError}=await db
       .from("family_members")
       .select("family_id, role, status")
-      .eq("user_id", currentUser.id)
-      .eq("status", "active");
+      .eq("user_id",currentUser.id)
+      .eq("status","active");
 
-    if (memberError) {
-      setMessage("familyMessage", memberError.message);
+    if(memberError){
+      setMessage("familyMessage",memberError.message);
       return;
     }
 
-    if (!memberships || memberships.length === 0) {
+    if(!memberships||memberships.length===0){
       $("createFamilyCard").classList.remove("hidden");
       $("familyListSection").classList.add("hidden");
       return;
     }
 
-    const ids = memberships.map(m => m.family_id);
-
-    const { data: families, error: familyError } = await db
+    const ids=memberships.map(m=>m.family_id);
+    const {data:families,error:familyError}=await db
       .from("families")
       .select("id, name, currency, language, timezone")
-      .in("id", ids);
+      .in("id",ids);
 
-    if (familyError) {
-      setMessage("familyMessage", familyError.message);
+    if(familyError){
+      setMessage("familyMessage",familyError.message);
       return;
     }
 
-    familiesCache = families || [];
+    familiesCache=families||[];
 
-    const { data: children, error: childrenError } = await db
+    const {data:children,error:childrenError}=await db
       .from("children")
       .select("id, family_id, name, avatar_url, birth_year, is_active, sort_order")
-      .in("family_id", ids)
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true });
+      .in("family_id",ids)
+      .eq("is_active",true)
+      .order("sort_order",{ascending:true});
 
-    if (childrenError) {
-      setMessage("familyMessage", t("loadError") + " " + childrenError.message);
+    if(childrenError){
+      setMessage("familyMessage",t("loadError")+" "+childrenError.message);
       return;
     }
-    childrenCache = children || [];
 
+    childrenCache=children||[];
     $("createFamilyCard").classList.add("hidden");
     $("familyListSection").classList.remove("hidden");
-    $("familyList").innerHTML = "";
 
-    familiesCache.forEach(family => {
-      const membership = memberships.find(m => m.family_id === family.id);
-      const card = document.createElement("div");
-      card.className = "family-card" +
-        (selectedFamilyId === family.id ? " selected-family" : "");
-
-      const heading = document.createElement("div");
-      heading.className = "family-heading";
-
-      const titleArea = document.createElement("div");
-      titleArea.appendChild(makeTextElement("h3", "🏡 " + family.name));
-
-      const role = membership?.role === "owner"
-        ? t("owner")
-        : (membership?.role || "");
-
-      titleArea.appendChild(makeTextElement(
-        "p",
-        family.currency + " · " + family.timezone + " · " + t("role") + ": " + role,
-        "muted"
-      ));
-
-      const selectButton = document.createElement("button");
-      selectButton.type = "button";
-      selectButton.className = "secondary";
-      selectButton.textContent = selectedFamilyId === family.id
-        ? "✓ " + t("selected")
-        : t("chooseFamily");
-
-      selectButton.addEventListener("click", () => {
-        selectedFamilyId = family.id;
-        selectedFamilyName = family.name;
-        updateLanguage();
-        renderFamilies(familiesCache, memberships, children || []);
-      });
-
-      heading.append(titleArea, selectButton);
-      card.appendChild(heading);
-
-      card.appendChild(makeTextElement("h4", t("children")));
-
-      const familyChildren = (children || []).filter(
-        child => child.family_id === family.id
-      );
-
-      if (familyChildren.length === 0) {
-        card.appendChild(makeTextElement(
-          "p",
-          t("noChildren"),
-          "empty-children"
-        ));
-      } else {
-        const childrenList = document.createElement("div");
-        childrenList.className = "children-list";
-
-        familyChildren.forEach(child => {
-          const childCard = document.createElement("div");
-          childCard.className = "child-card";
-
-          const avatar = makeTextElement(
-            "div",
-            child.avatar_url || "🙂",
-            "avatar"
-          );
-
-          const details = document.createElement("div");
-          details.appendChild(makeTextElement("strong", child.name));
-
-          if (child.birth_year) {
-            details.appendChild(makeTextElement(
-              "small",
-              String(child.birth_year)
-            ));
-          }
-
-          childCard.append(avatar, details);
-          childrenList.appendChild(childCard);
-        });
-
-        card.appendChild(childrenList);
-      }
-
-      $("familyList").appendChild(card);
-    });
-
-    if (!selectedFamilyId || !familiesCache.some(f => f.id === selectedFamilyId)) {
-      selectedFamilyId = familiesCache[0]?.id || null;
-      selectedFamilyName = familiesCache[0]?.name || "";
-      renderFamilies(familiesCache, memberships, children || []);
+    if(!selectedFamilyId||!familiesCache.some(f=>f.id===selectedFamilyId)){
+      selectedFamilyId=familiesCache[0]?.id||null;
+      selectedFamilyName=familiesCache[0]?.name||"";
     }
 
-    $("selectedFamilyText").textContent = selectedFamilyName
-      ? t("selected") + ": " + selectedFamilyName
-      : t("noFamilySelected");
+    renderFamilies(memberships,childrenCache);
+    $("selectedFamilyText").textContent=selectedFamilyName?
+      t("selected")+": "+selectedFamilyName:t("noFamilySelected");
 
     renderTaskChildChoices();
     await loadTasks();
+    await loadApprovals();
   }
 
-  function renderFamilies(families, memberships, children) {
-    $("familyList").innerHTML = "";
+  function renderFamilies(memberships,children){
+    $("familyList").innerHTML="";
 
-    families.forEach(family => {
-      const membership = memberships.find(m => m.family_id === family.id);
-      const card = document.createElement("div");
-      card.className = "family-card" +
-        (selectedFamilyId === family.id ? " selected-family" : "");
+    familiesCache.forEach(family=>{
+      const membership=memberships.find(m=>m.family_id===family.id);
+      const card=document.createElement("div");
+      card.className="family-card"+(selectedFamilyId===family.id?" selected-family":"");
 
-      const heading = document.createElement("div");
-      heading.className = "family-heading";
+      const heading=document.createElement("div");
+      heading.className="family-heading";
+      const titleArea=document.createElement("div");
+      titleArea.appendChild(makeTextElement("h3","🏡 "+family.name));
 
-      const titleArea = document.createElement("div");
-      titleArea.appendChild(makeTextElement("h3", "🏡 " + family.name));
-
-      const role = membership?.role === "owner"
-        ? t("owner")
-        : (membership?.role || "");
-
+      const role=membership?.role==="owner"?t("owner"):(membership?.role||"");
       titleArea.appendChild(makeTextElement(
         "p",
-        family.currency + " · " + family.timezone + " · " + t("role") + ": " + role,
+        family.currency+" · "+family.timezone+" · "+t("role")+": "+role,
         "muted"
       ));
 
-      const selectButton = document.createElement("button");
-      selectButton.type = "button";
-      selectButton.className = "secondary";
-      selectButton.textContent = selectedFamilyId === family.id
-        ? "✓ " + t("selected")
-        : t("chooseFamily");
+      const selectButton=document.createElement("button");
+      selectButton.type="button";
+      selectButton.className="secondary";
+      selectButton.textContent=selectedFamilyId===family.id?
+        "✓ "+t("selected"):t("chooseFamily");
 
-      selectButton.addEventListener("click", async () => {
-        selectedFamilyId = family.id;
-        selectedFamilyName = family.name;
+      selectButton.addEventListener("click",async()=>{
+        selectedFamilyId=family.id;
+        selectedFamilyName=family.name;
         updateLanguage();
         await loadFamilies();
       });
 
-      heading.append(titleArea, selectButton);
+      heading.append(titleArea,selectButton);
       card.appendChild(heading);
-      card.appendChild(makeTextElement("h4", t("children")));
+      card.appendChild(makeTextElement("h4",t("children")));
 
-      const familyChildren = children.filter(
-        child => child.family_id === family.id
-      );
+      const familyChildren=children.filter(c=>c.family_id===family.id);
 
-      if (familyChildren.length === 0) {
-        card.appendChild(makeTextElement(
-          "p",
-          t("noChildren"),
-          "empty-children"
-        ));
-      } else {
-        const childrenList = document.createElement("div");
-        childrenList.className = "children-list";
+      if(!familyChildren.length){
+        card.appendChild(makeTextElement("p",t("noChildren"),"empty-children"));
+      }else{
+        const childrenList=document.createElement("div");
+        childrenList.className="children-list";
 
-        familyChildren.forEach(child => {
-          const childCard = document.createElement("div");
-          childCard.className = "child-card";
-
-          const avatar = makeTextElement(
-            "div",
-            child.avatar_url || "🙂",
-            "avatar"
-          );
-
-          const details = document.createElement("div");
-          details.appendChild(makeTextElement("strong", child.name));
-
-          if (child.birth_year) {
-            details.appendChild(makeTextElement("small", String(child.birth_year)));
+        familyChildren.forEach(child=>{
+          const childCard=document.createElement("div");
+          childCard.className="child-card";
+          const avatar=makeTextElement("div",child.avatar_url||"🙂","avatar");
+          const details=document.createElement("div");
+          details.appendChild(makeTextElement("strong",child.name));
+          if(child.birth_year){
+            details.appendChild(makeTextElement("small",String(child.birth_year)));
           }
-
-          childCard.append(avatar, details);
+          childCard.append(avatar,details);
           childrenList.appendChild(childCard);
         });
-
         card.appendChild(childrenList);
       }
-
       $("familyList").appendChild(card);
     });
-
-    $("selectedFamilyText").textContent = selectedFamilyName
-      ? t("selected") + ": " + selectedFamilyName
-      : t("noFamilySelected");
   }
 
-  function renderTaskChildChoices() {
-    const wrap = $("taskChildrenWrap");
-    const choices = $("taskChildChoices");
-    choices.innerHTML = "";
-    const children = childrenCache.filter(child => child.family_id === selectedFamilyId);
-    const needsAssignments = $("taskSelectionType").value !== "self_select";
-    wrap.classList.toggle("hidden", !needsAssignments);
+  function renderTaskChildChoices(){
+    const wrap=$("taskChildrenWrap");
+    const choices=$("taskChildChoices");
+    choices.innerHTML="";
+    const children=childrenCache.filter(c=>c.family_id===selectedFamilyId);
+    const needsAssignments=$("taskSelectionType").value!=="self_select";
+    wrap.classList.toggle("hidden",!needsAssignments);
 
-    if (!children.length) {
-      choices.appendChild(makeTextElement("div", t("noChildrenForTasks"), "task-hint"));
+    if(!children.length){
+      choices.appendChild(makeTextElement("div",t("noChildrenForTasks"),"task-hint"));
       return;
     }
 
-    children.forEach(child => {
-      const label = document.createElement("label");
-      label.className = "task-child-option";
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.value = child.id;
-      checkbox.className = "task-child-checkbox";
-      const name = document.createElement("span");
-      name.textContent = (child.avatar_url || "🙂") + " " + child.name;
-      label.append(checkbox, name);
+    children.forEach(child=>{
+      const label=document.createElement("label");
+      label.className="task-child-option";
+      const checkbox=document.createElement("input");
+      checkbox.type="checkbox";
+      checkbox.value=child.id;
+      checkbox.className="task-child-checkbox";
+      const name=document.createElement("span");
+      name.textContent=(child.avatar_url||"🙂")+" "+child.name;
+      label.append(checkbox,name);
       choices.appendChild(label);
     });
   }
 
-  async function loadTasks() {
-    const list = $("taskList");
-    if (!selectedFamilyId) {
-      list.innerHTML = "";
-      list.appendChild(makeTextElement("div", t("noFamilySelected"), "task-empty"));
+  async function loadTasks(){
+    const list=$("taskList");
+    if(!selectedFamilyId){
+      list.innerHTML="";
+      list.appendChild(makeTextElement("div",t("noFamilySelected"),"task-empty"));
       return;
     }
 
-    list.innerHTML = "";
-    list.appendChild(makeTextElement("div", t("loading"), "task-empty"));
+    list.innerHTML="";
+    list.appendChild(makeTextElement("div",t("loading"),"task-empty"));
 
-    const { data: tasks, error } = await db
+    const {data:tasks,error}=await db
       .from("tasks")
       .select("id, title, description, category, selection_type, recurrence, points, stars, requires_approval, is_active")
-      .eq("family_id", selectedFamilyId)
-      .eq("is_active", true)
-      .order("created_at", { ascending: false });
+      .eq("family_id",selectedFamilyId)
+      .eq("is_active",true)
+      .order("created_at",{ascending:false});
 
-    if (error) {
-      list.innerHTML = "";
-      list.appendChild(makeTextElement("div", t("taskError") + " " + error.message, "task-empty"));
+    if(error){
+      list.innerHTML="";
+      list.appendChild(makeTextElement("div",t("taskError")+" "+error.message,"task-empty"));
       return;
     }
 
-    list.innerHTML = "";
-    if (!tasks || tasks.length === 0) {
-      list.appendChild(makeTextElement("div", t("noTasks"), "task-empty"));
+    list.innerHTML="";
+    if(!tasks||!tasks.length){
+      list.appendChild(makeTextElement("div",t("noTasks"),"task-empty"));
       return;
     }
 
-    tasks.forEach(task => {
-      const item = document.createElement("div");
-      item.className = "task-item";
-      const info = document.createElement("div");
-      const title = makeTextElement("h4", task.title);
-      info.appendChild(title);
-      if (task.description) info.appendChild(makeTextElement("div", task.description, "task-meta"));
-      const mode = task.selection_type === "assigned" ? t("assigned") :
-        task.selection_type === "both" ? t("both") : t("selfSelect");
-      const repeat = task.recurrence === "daily" ? t("daily") :
-        task.recurrence === "weekly" ? t("weekly") : t("once");
-      const approval = task.requires_approval ? t("approvalYes") : t("approvalNo");
-      const meta = ["⭐ " + task.stars, "✦ " + task.points + " " + t("taskPoints").toLowerCase(), mode, repeat, approval];
-      if (task.category) meta.push(task.category);
-      info.appendChild(makeTextElement("div", meta.join(" · "), "task-meta"));
+    tasks.forEach(task=>{
+      const item=document.createElement("div");
+      item.className="task-item";
+      const info=document.createElement("div");
+      info.appendChild(makeTextElement("h4",task.title));
+      if(task.description){
+        info.appendChild(makeTextElement("div",task.description,"task-meta"));
+      }
 
-      const deactivate = document.createElement("button");
-      deactivate.type = "button";
-      deactivate.className = "secondary";
-      deactivate.textContent = t("taskDeactivate");
-      deactivate.addEventListener("click", () => deactivateTask(task.id, deactivate));
-      item.append(info, deactivate);
+      const mode=task.selection_type==="assigned"?t("assigned"):
+        task.selection_type==="both"?t("both"):t("selfSelect");
+      const repeat=task.recurrence==="daily"?t("daily"):
+        task.recurrence==="weekly"?t("weekly"):t("once");
+      const approval=task.requires_approval?t("approvalYes"):t("approvalNo");
+      const meta=["⭐ "+task.stars,"✦ "+task.points+" "+t("taskPoints").toLowerCase(),mode,repeat,approval];
+      if(task.category)meta.push(task.category);
+      info.appendChild(makeTextElement("div",meta.join(" · "),"task-meta"));
+
+      const deactivate=document.createElement("button");
+      deactivate.type="button";
+      deactivate.className="secondary";
+      deactivate.textContent=t("taskDeactivate");
+      deactivate.addEventListener("click",()=>deactivateTask(task.id,deactivate));
+      item.append(info,deactivate);
       list.appendChild(item);
     });
   }
 
-  async function deactivateTask(taskId, button) {
-    if (!confirm(currentLanguage === "da" ? "Vil du deaktivere denne opgave?" : "Deactivate this task?")) return;
-    button.disabled = true;
-    const { error } = await db
-      .from("tasks")
-      .update({ is_active: false })
-      .eq("id", taskId)
-      .eq("family_id", selectedFamilyId);
-    if (error) {
-      setMessage("taskMessage", t("taskDeactivateError") + " " + error.message);
-      button.disabled = false;
+  async function deactivateTask(taskId,button){
+    if(!confirm(currentLanguage==="da"?
+      "Vil du deaktivere denne opgave?":"Deactivate this task?"))return;
+
+    button.disabled=true;
+    const {error}=await db.from("tasks")
+      .update({is_active:false})
+      .eq("id",taskId)
+      .eq("family_id",selectedFamilyId);
+
+    if(error){
+      setMessage("taskMessage",t("taskDeactivateError")+" "+error.message);
+      button.disabled=false;
       return;
     }
-    setMessage("taskMessage", t("taskDeactivated"), "success");
+
+    setMessage("taskMessage",t("taskDeactivated"),"success");
     await loadTasks();
   }
 
-  $("taskSelectionType").addEventListener("change", renderTaskChildChoices);
+  async function loadApprovals(){
+    const pendingList=$("pendingApprovalList");
+    const historyList=$("approvalHistoryList");
+    const count=$("approvalCount");
+    clearMessage("approvalMessage");
 
-  $("taskForm").addEventListener("submit", async e => {
+    if(!selectedFamilyId){
+      pendingList.innerHTML="";
+      historyList.innerHTML="";
+      pendingList.appendChild(makeTextElement("div",t("noFamilySelected"),"task-empty"));
+      historyList.appendChild(makeTextElement("div",t("noFamilySelected"),"task-empty"));
+      count.textContent="0";
+      return;
+    }
+
+    pendingList.innerHTML="";
+    historyList.innerHTML="";
+    pendingList.appendChild(makeTextElement("div",t("approvalLoading"),"task-empty"));
+    historyList.appendChild(makeTextElement("div",t("loading"),"task-empty"));
+
+    const {data:completions,error}=await db
+      .from("task_completions")
+      .select("id, task_id, child_id, status, completed_at, completed_date, points_awarded, stars_awarded")
+      .eq("family_id",selectedFamilyId)
+      .order("completed_at",{ascending:false})
+      .limit(100);
+
+    if(error){
+      pendingList.innerHTML="";
+      historyList.innerHTML="";
+      pendingList.appendChild(makeTextElement("div",t("approvalError")+" "+error.message,"task-empty"));
+      historyList.appendChild(makeTextElement("div",t("approvalError")+" "+error.message,"task-empty"));
+      count.textContent="!";
+      return;
+    }
+
+    const rows=completions||[];
+    const pending=rows.filter(row=>row.status==="pending");
+    const history=rows.filter(row=>row.status==="approved"||row.status==="rejected");
+    count.textContent=String(pending.length);
+
+    const taskIds=[...new Set(rows.map(row=>row.task_id).filter(Boolean))];
+    const childIds=[...new Set(rows.map(row=>row.child_id).filter(Boolean))];
+    let taskMap=new Map();
+    let childMap=new Map();
+
+    if(taskIds.length){
+      const {data:tasks,error:tasksError}=await db
+        .from("tasks").select("id,title").in("id",taskIds);
+      if(tasksError){
+        pendingList.innerHTML="";
+        historyList.innerHTML="";
+        pendingList.appendChild(makeTextElement("div",t("approvalError")+" "+tasksError.message,"task-empty"));
+        historyList.appendChild(makeTextElement("div",t("approvalError")+" "+tasksError.message,"task-empty"));
+        return;
+      }
+      taskMap=new Map((tasks||[]).map(task=>[task.id,task]));
+    }
+
+    if(childIds.length){
+      const {data:children,error:childrenError}=await db
+        .from("children").select("id,name,avatar_url").in("id",childIds);
+      if(childrenError){
+        pendingList.innerHTML="";
+        historyList.innerHTML="";
+        pendingList.appendChild(makeTextElement("div",t("approvalError")+" "+childrenError.message,"task-empty"));
+        historyList.appendChild(makeTextElement("div",t("approvalError")+" "+childrenError.message,"task-empty"));
+        return;
+      }
+      childMap=new Map((children||[]).map(child=>[child.id,child]));
+    }
+
+    pendingList.innerHTML="";
+    if(!pending.length){
+      pendingList.appendChild(makeTextElement("div",t("approvalEmpty"),"task-empty"));
+    }else{
+      pending.forEach(row=>{
+        const task=taskMap.get(row.task_id);
+        const child=childMap.get(row.child_id);
+        const item=document.createElement("div");
+        item.className="approval-item";
+        const info=document.createElement("div");
+        info.appendChild(makeTextElement("h4",task?.title||
+          (currentLanguage==="da"?"Ukendt opgave":"Unknown task")));
+
+        const childName=child?(child.avatar_url||"🙂")+" "+child.name:t("approvalChild");
+        const date=row.completed_at?
+          new Date(row.completed_at).toLocaleString(currentLanguage==="da"?"da-DK":"en-GB"):"";
+        const reward="⭐ "+(row.stars_awarded||0)+" · ✦ "+(row.points_awarded||0);
+
+        info.appendChild(makeTextElement("div",childName+" · "+date,"task-meta"));
+        info.appendChild(makeTextElement("div",t("approvalReward")+": "+reward,"task-meta"));
+
+        const actions=document.createElement("div");
+        actions.className="approval-actions";
+
+        const approve=document.createElement("button");
+        approve.type="button";
+        approve.className="approve-button";
+        approve.textContent=t("approvalApprove");
+        approve.addEventListener("click",()=>reviewCompletion(row.id,true,approve,reject));
+
+        const reject=document.createElement("button");
+        reject.type="button";
+        reject.className="reject-button";
+        reject.textContent=t("approvalReject");
+        reject.addEventListener("click",()=>reviewCompletion(row.id,false,approve,reject));
+
+        actions.append(approve,reject);
+        item.append(info,actions);
+        pendingList.appendChild(item);
+      });
+    }
+
+    historyList.innerHTML="";
+    if(!history.length){
+      historyList.appendChild(makeTextElement("div",t("approvalHistoryEmpty"),"task-empty"));
+    }else{
+      history.slice(0,30).forEach(row=>{
+        const task=taskMap.get(row.task_id);
+        const child=childMap.get(row.child_id);
+        const item=document.createElement("div");
+        item.className="approval-item";
+        const info=document.createElement("div");
+        info.appendChild(makeTextElement("h4",task?.title||
+          (currentLanguage==="da"?"Ukendt opgave":"Unknown task")));
+
+        const childName=child?(child.avatar_url||"🙂")+" "+child.name:t("approvalChild");
+        const date=row.completed_at?
+          new Date(row.completed_at).toLocaleString(currentLanguage==="da"?"da-DK":"en-GB"):"";
+        info.appendChild(makeTextElement("div",childName+" · "+date,"task-meta"));
+
+        const status=makeTextElement(
+          "span",
+          row.status==="approved"?t("approvalApproved"):t("approvalRejected"),
+          "history-status "+row.status
+        );
+        info.appendChild(status);
+
+        if(row.status==="approved"){
+          info.appendChild(makeTextElement(
+            "div",
+            "⭐ "+(row.stars_awarded||0)+" · ✦ "+(row.points_awarded||0),
+            "task-meta"
+          ));
+        }
+        item.appendChild(info);
+        historyList.appendChild(item);
+      });
+    }
+  }
+
+  async function reviewCompletion(completionId,approve,approveButton,rejectButton){
+    approveButton.disabled=true;
+    rejectButton.disabled=true;
+    clearMessage("approvalMessage");
+
+    try{
+      const {data,error}=await db.rpc("review_task_completion",{
+        p_completion_id:completionId,
+        p_approve:approve
+      });
+
+      if(error)throw error;
+      if(!data||data.success!==true){
+        throw new Error(data?.message||t("approvalActionError"));
+      }
+
+      setMessage("approvalMessage",data.message||t("approvalSuccess"),"success");
+      await loadApprovals();
+    }catch(error){
+      setMessage("approvalMessage",t("approvalActionError")+" "+(error.message||""));
+      approveButton.disabled=false;
+      rejectButton.disabled=false;
+    }
+  }
+
+  $("taskSelectionType").addEventListener("change",renderTaskChildChoices);
+
+  $("taskForm").addEventListener("submit",async e=>{
     e.preventDefault();
     clearMessage("taskMessage");
-    if (!selectedFamilyId) {
-      setMessage("taskMessage", t("noFamilySelected"));
+
+    if(!selectedFamilyId){
+      setMessage("taskMessage",t("noFamilySelected"));
       return;
     }
 
-    const selectionType = $("taskSelectionType").value;
-    const selectedChildren = Array.from(document.querySelectorAll(".task-child-checkbox:checked"))
-      .map(input => input.value);
-    if (selectionType !== "self_select" && selectedChildren.length === 0) {
-      setMessage("taskMessage", t("chooseChild"));
+    const selectionType=$("taskSelectionType").value;
+    const selectedChildren=Array.from(
+      document.querySelectorAll(".task-child-checkbox:checked")
+    ).map(input=>input.value);
+
+    if(selectionType!=="self_select"&&selectedChildren.length===0){
+      setMessage("taskMessage",t("chooseChild"));
       return;
     }
 
-    const title = $("taskTitle").value.trim();
-    const points = Number($("taskPoints").value);
-    const stars = Number($("taskStars").value);
-    if (!title || !Number.isInteger(points) || points < 0 || !Number.isInteger(stars) || stars < 0) {
-      setMessage("taskMessage", t("invalid"));
+    const title=$("taskTitle").value.trim();
+    const points=Number($("taskPoints").value);
+    const stars=Number($("taskStars").value);
+
+    if(!title||!Number.isInteger(points)||points<0||
+       !Number.isInteger(stars)||stars<0){
+      setMessage("taskMessage",t("invalid"));
       return;
     }
 
-    const button = $("createTaskButton");
-    button.disabled = true;
-    button.textContent = t("taskLoading");
+    const button=$("createTaskButton");
+    button.disabled=true;
+    button.textContent=t("taskLoading");
 
-    let createdTaskId = null;
-    try {
-      const taskData = {
-        family_id: selectedFamilyId,
+    let createdTaskId=null;
+
+    try{
+      const taskData={
+        family_id:selectedFamilyId,
         title,
-        description: $("taskDescription").value.trim() || null,
-        category: $("taskCategory").value.trim() || null,
-        selection_type: selectionType,
-        recurrence: $("taskRecurrence").value,
+        description:$("taskDescription").value.trim()||null,
+        category:$("taskCategory").value.trim()||null,
+        selection_type:selectionType,
+        recurrence:$("taskRecurrence").value,
         points,
         stars,
-        requires_approval: $("taskRequiresApproval").checked,
-        created_by: currentUser.id,
-        is_active: true
+        requires_approval:$("taskRequiresApproval").checked,
+        created_by:currentUser.id,
+        is_active:true
       };
 
-      const { data: task, error: taskError } = await db
-        .from("tasks")
-        .insert(taskData)
-        .select("id")
-        .single();
-      if (taskError) throw taskError;
-      createdTaskId = task.id;
+      const {data:task,error:taskError}=await db
+        .from("tasks").insert(taskData).select("id").single();
 
-      if (selectionType !== "self_select") {
-        const assignments = selectedChildren.map(childId => ({
-          family_id: selectedFamilyId,
-          task_id: createdTaskId,
-          child_id: childId
+      if(taskError)throw taskError;
+      createdTaskId=task.id;
+
+      if(selectionType!=="self_select"){
+        const assignments=selectedChildren.map(childId=>({
+          family_id:selectedFamilyId,
+          task_id:createdTaskId,
+          child_id:childId
         }));
-        const { error: assignmentError } = await db
-          .from("task_assignments")
-          .insert(assignments);
-        if (assignmentError) {
-          await db.from("tasks").delete().eq("id", createdTaskId).eq("family_id", selectedFamilyId);
+
+        const {error:assignmentError}=await db
+          .from("task_assignments").insert(assignments);
+
+        if(assignmentError){
+          await db.from("tasks").delete()
+            .eq("id",createdTaskId)
+            .eq("family_id",selectedFamilyId);
           throw assignmentError;
         }
       }
 
       $("taskForm").reset();
-      $("taskPoints").value = 10;
-      $("taskStars").value = 1;
-      $("taskRequiresApproval").checked = true;
-      $("taskSelectionType").value = "self_select";
+      $("taskPoints").value=10;
+      $("taskStars").value=1;
+      $("taskRequiresApproval").checked=true;
+      $("taskSelectionType").value="self_select";
       renderTaskChildChoices();
-      setMessage("taskMessage", t("taskSuccess"), "success");
+
+      setMessage("taskMessage",t("taskSuccess"),"success");
       await loadTasks();
-    } catch (error) {
-      setMessage("taskMessage", t("taskError") + " " + (error.message || ""));
-    } finally {
-      button.disabled = false;
-      button.textContent = t("createTask");
+    }catch(error){
+      setMessage("taskMessage",t("taskError")+" "+(error.message||""));
+    }finally{
+      button.disabled=false;
+      button.textContent=t("createTask");
     }
   });
 
-  $("languageSelect").addEventListener("change", e => {
-    currentLanguage = e.target.value;
-    localStorage.setItem("familytasks_language", currentLanguage);
+  $("languageSelect").addEventListener("change",e=>{
+    currentLanguage=e.target.value;
+    localStorage.setItem("familytasks_language",currentLanguage);
     updateLanguage();
-
-    if (currentUser) {
-      showDashboard(currentUser);
-    }
+    if(currentUser)showDashboard(currentUser);
   });
 
-  $("switchButton").addEventListener("click", () => {
-    isSignup = !isSignup;
+  $("switchButton").addEventListener("click",()=>{
+    isSignup=!isSignup;
     clearMessage("authMessage");
     updateLanguage();
   });
 
-  $("authForm").addEventListener("submit", async e => {
+  $("authForm").addEventListener("submit",async e=>{
     e.preventDefault();
     clearMessage("authMessage");
 
-    const email = $("email").value.trim();
-    const password = $("password").value;
-    const name = $("displayName").value.trim();
+    const email=$("email").value.trim();
+    const password=$("password").value;
+    const name=$("displayName").value.trim();
 
-    $("authButton").disabled = true;
-    $("authButton").textContent = t("loading");
+    $("authButton").disabled=true;
+    $("authButton").textContent=t("loading");
 
-    try {
-      if (isSignup) {
-        if (!name) throw new Error(t("invalid"));
+    try{
+      if(isSignup){
+        if(!name)throw new Error(t("invalid"));
 
-        const { data, error } = await db.auth.signUp({
+        const {data,error}=await db.auth.signUp({
           email,
           password,
-          options: {
-            data: { display_name: name },
-            emailRedirectTo: window.location.href.split("?")[0]
+          options:{
+            data:{display_name:name},
+            emailRedirectTo:window.location.href.split("?")[0]
           }
         });
 
-        if (error) throw error;
+        if(error)throw error;
 
-        if (data.session) {
-          setMessage("authMessage", t("signupSuccess"), "success");
+        if(data.session){
+          setMessage("authMessage",t("signupSuccess"),"success");
           await showDashboard(data.user);
-        } else {
-          setMessage("authMessage", t("confirmEmail"), "success");
+        }else{
+          setMessage("authMessage",t("confirmEmail"),"success");
         }
-      } else {
-        const { data, error } = await db.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        if (error) throw error;
+      }else{
+        const {data,error}=await db.auth.signInWithPassword({email,password});
+        if(error)throw error;
         await showDashboard(data.user);
       }
-    } catch (error) {
-      setMessage("authMessage", error.message || t("authError"));
-    } finally {
-      $("authButton").disabled = false;
+    }catch(error){
+      setMessage("authMessage",error.message||t("authError"));
+    }finally{
+      $("authButton").disabled=false;
       updateLanguage();
     }
   });
 
-  $("familyForm").addEventListener("submit", async e => {
+  $("familyForm").addEventListener("submit",async e=>{
     e.preventDefault();
     clearMessage("familyMessage");
 
-    const name = $("familyName").value.trim();
-    const currency = $("currency").value;
-    const timezone = $("timezone").value;
+    const name=$("familyName").value.trim();
+    const currency=$("currency").value;
+    const timezone=$("timezone").value;
 
-    if (!name) {
-      setMessage("familyMessage", t("invalid"));
+    if(!name){
+      setMessage("familyMessage",t("invalid"));
       return;
     }
 
-    $("createFamilyButton").disabled = true;
-    $("createFamilyButton").textContent = t("loading");
+    $("createFamilyButton").disabled=true;
+    $("createFamilyButton").textContent=t("loading");
 
-    try {
-      const { data, error } = await db.rpc("create_family", {
-        p_name: name,
-        p_currency: currency,
-        p_timezone: timezone,
-        p_language: currentLanguage
+    try{
+      const {error}=await db.rpc("create_family",{
+        p_name:name,
+        p_currency:currency,
+        p_timezone:timezone,
+        p_language:currentLanguage
       });
 
-      if (error) throw error;
+      if(error)throw error;
 
-      $("familyName").value = "";
-      selectedFamilyId = null;
-      selectedFamilyName = "";
-
-      setMessage("familyMessage", t("familySuccess"), "success");
+      $("familyName").value="";
+      selectedFamilyId=null;
+      selectedFamilyName="";
+      setMessage("familyMessage",t("familySuccess"),"success");
       await loadFamilies();
-    } catch (error) {
-      setMessage("familyMessage", error.message || t("familyError"));
-    } finally {
-      $("createFamilyButton").disabled = false;
-      $("createFamilyButton").textContent = t("createButton");
+    }catch(error){
+      setMessage("familyMessage",error.message||t("familyError"));
+    }finally{
+      $("createFamilyButton").disabled=false;
+      $("createFamilyButton").textContent=t("createButton");
     }
   });
 
-  $("childForm").addEventListener("submit", async e => {
+  $("childForm").addEventListener("submit",async e=>{
     e.preventDefault();
     clearMessage("childMessage");
 
-    if (!selectedFamilyId) {
-      setMessage("childMessage", t("noFamilySelected"));
+    if(!selectedFamilyId){
+      setMessage("childMessage",t("noFamilySelected"));
       return;
     }
 
-    const name = $("childName").value.trim();
-    const avatar = $("childAvatar").value;
-    const pin = $("childPin").value.trim();
-    const birthYearValue = $("birthYear").value.trim();
+    const name=$("childName").value.trim();
+    const avatar=$("childAvatar").value;
+    const pin=$("childPin").value.trim();
+    const birthYearValue=$("birthYear").value.trim();
 
-    if (!/^[0-9]{4}$/.test(pin)) {
-      setMessage("childMessage", t("childPinError"));
+    if(!/^[0-9]{4}$/.test(pin)){
+      setMessage("childMessage",t("childPinError"));
       return;
     }
 
-    let birthYear = null;
-
-    if (birthYearValue) {
-      birthYear = Number(birthYearValue);
-
-      if (!Number.isInteger(birthYear) || birthYear < 2000 || birthYear > 2035) {
-        setMessage("childMessage", t("yearError"));
+    let birthYear=null;
+    if(birthYearValue){
+      birthYear=Number(birthYearValue);
+      if(!Number.isInteger(birthYear)||birthYear<2000||birthYear>2035){
+        setMessage("childMessage",t("yearError"));
         return;
       }
     }
 
-    $("createChildButton").disabled = true;
-    $("createChildButton").textContent = t("childLoading");
+    $("createChildButton").disabled=true;
+    $("createChildButton").textContent=t("childLoading");
 
-    try {
-      const { error } = await db.rpc("create_child_with_pin", {
-        p_family_id: selectedFamilyId,
-        p_name: name,
-        p_pin: pin,
-        p_avatar_url: avatar,
-        p_birth_year: birthYear
+    try{
+      const {error}=await db.rpc("create_child_with_pin",{
+        p_family_id:selectedFamilyId,
+        p_name:name,
+        p_pin:pin,
+        p_avatar_url:avatar,
+        p_birth_year:birthYear
       });
 
-      if (error) throw error;
+      if(error)throw error;
 
-      $("childName").value = "";
-      $("childPin").value = "";
-      $("birthYear").value = "";
-      $("childAvatar").value = "🦁";
+      $("childName").value="";
+      $("childPin").value="";
+      $("birthYear").value="";
+      $("childAvatar").value="🦁";
 
-      setMessage("childMessage", t("childSuccess"), "success");
-
+      setMessage("childMessage",t("childSuccess"),"success");
       await loadFamilies();
-    } catch (error) {
-      setMessage(
-        "childMessage",
-        t("childError") + " " + error.message
-      );
-    } finally {
-      $("createChildButton").disabled = false;
-      $("createChildButton").textContent = t("createChild");
+    }catch(error){
+      setMessage("childMessage",t("childError")+" "+error.message);
+    }finally{
+      $("createChildButton").disabled=false;
+      $("createChildButton").textContent=t("createChild");
     }
   });
 
-  $("showFamilyForm").addEventListener("click", () => {
+  $("showFamilyForm").addEventListener("click",()=>{
     $("familyListSection").classList.add("hidden");
     $("createFamilyCard").classList.remove("hidden");
     clearMessage("familyMessage");
   });
 
-  $("logoutButton").addEventListener("click", async () => {
+  $("logoutButton").addEventListener("click",async()=>{
     await db.auth.signOut();
-    currentUser = null;
-    selectedFamilyId = null;
-    selectedFamilyName = "";
+    currentUser=null;
+    selectedFamilyId=null;
+    selectedFamilyName="";
     showAuth();
   });
 
-  async function init() {
+  async function init(){
     updateLanguage();
+    const {data:{session}}=await db.auth.getSession();
 
-    const { data: { session } } = await db.auth.getSession();
-
-    if (session?.user) {
+    if(session?.user){
       await showDashboard(session.user);
-    } else {
+    }else{
       showAuth();
     }
 
-    db.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT") {
-        currentUser = null;
-        selectedFamilyId = null;
-        selectedFamilyName = "";
+    db.auth.onAuthStateChange((event,session)=>{
+      if(event==="SIGNED_OUT"){
+        currentUser=null;
+        selectedFamilyId=null;
+        selectedFamilyName="";
         showAuth();
-      } else if (event === "SIGNED_IN" && session?.user) {
-        currentUser = session.user;
+      }else if(event==="SIGNED_IN"&&session?.user){
+        currentUser=session.user;
         showDashboard(session.user);
       }
     });
