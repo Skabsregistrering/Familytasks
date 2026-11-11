@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="da">
 <head>
@@ -291,6 +290,25 @@
       .welcome { padding: 23px; }
       .brand { font-size: 19px; }
     }
+
+    .task-panel { max-width: 900px; margin: 0 auto 22px; }
+    .task-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+    .task-form-grid .full { grid-column: 1 / -1; }
+    .task-child-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px; margin-top: 9px; }
+    .task-child-option { display: flex; align-items: center; gap: 9px; padding: 10px 12px; border: 1px solid #e8e5f0; border-radius: 11px; background: #faf9fd; font-size: 14px; }
+    .task-child-option input { width: auto; margin: 0; accent-color: #6758d8; }
+    .task-list { display: grid; gap: 11px; margin-top: 20px; }
+    .task-item { border: 1px solid #eceaf3; border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; gap: 14px; }
+    .task-item h4 { margin: 0 0 6px; font-size: 16px; }
+    .task-meta { color: #858296; font-size: 13px; line-height: 1.55; }
+    .task-item button { flex-shrink: 0; }
+    .task-empty { color: #858296; background: #faf9fd; border-radius: 12px; padding: 16px; font-size: 14px; }
+    .task-hint { color: #858296; font-size: 13px; margin-top: 7px; line-height: 1.45; }
+    @media(max-width: 600px) {
+      .task-form-grid { grid-template-columns: 1fr; }
+      .task-form-grid .full { grid-column: auto; }
+      .task-item { align-items: flex-start; flex-direction: column; }
+    }
   </style>
 </head>
 
@@ -393,6 +411,67 @@
         <h2 class="section-title" id="myFamiliesTitle">Mine familier</h2>
         <div id="familyList"></div>
 
+
+        <section class="card task-panel" id="taskManagementCard">
+          <h2 id="taskManagementTitle">Opgavestyring</h2>
+          <p class="sub" id="taskManagementSubtitle">Opret opgaver, giv dem point, og vælg hvem der skal udføre dem.</p>
+          <form id="taskForm">
+            <div class="task-form-grid">
+              <div class="full">
+                <label for="taskTitle" id="taskTitleLabel">Opgavens navn</label>
+                <input id="taskTitle" type="text" maxlength="120" required placeholder="F.eks. Ryd dit legetøj op">
+              </div>
+              <div class="full">
+                <label for="taskDescription" id="taskDescriptionLabel">Beskrivelse (valgfrit)</label>
+                <input id="taskDescription" type="text" maxlength="500" placeholder="Hvad skal barnet gøre?">
+              </div>
+              <div>
+                <label for="taskPoints" id="taskPointsLabel">Point</label>
+                <input id="taskPoints" type="number" min="0" max="10000" step="1" value="10" required>
+              </div>
+              <div>
+                <label for="taskStars" id="taskStarsLabel">Stjerner</label>
+                <input id="taskStars" type="number" min="0" max="1000" step="1" value="1" required>
+              </div>
+              <div>
+                <label for="taskRecurrence" id="taskRecurrenceLabel">Gentagelse</label>
+                <select id="taskRecurrence">
+                  <option value="none">Ingen gentagelse</option>
+                  <option value="daily">Dagligt</option>
+                  <option value="weekly">Ugentligt</option>
+                </select>
+              </div>
+              <div>
+                <label for="taskSelectionType" id="taskSelectionLabel">Hvem vælger opgaven?</label>
+                <select id="taskSelectionType">
+                  <option value="self_select">Barnet vælger selv</option>
+                  <option value="assigned">Forældrene tildeler</option>
+                  <option value="both">Begge dele</option>
+                </select>
+              </div>
+              <div class="full" id="taskChildrenWrap">
+                <label id="taskChildrenLabel">Tildel til børn</label>
+                <div id="taskChildChoices" class="task-child-options"></div>
+                <div class="task-hint" id="taskChildrenHint">Vælg mindst ét barn ved tildelte opgaver.</div>
+              </div>
+              <div class="full">
+                <label for="taskCategory" id="taskCategoryLabel">Kategori (valgfrit)</label>
+                <input id="taskCategory" type="text" maxlength="60" placeholder="F.eks. Morgenrutine">
+              </div>
+              <div class="full">
+                <label class="task-child-option" style="margin-top:17px;">
+                  <input id="taskRequiresApproval" type="checkbox" checked>
+                  <span id="taskApprovalLabel">Kræver godkendelse fra en forælder</span>
+                </label>
+              </div>
+            </div>
+            <button class="primary" id="createTaskButton" type="submit">Opret opgave</button>
+          </form>
+          <div class="message" id="taskMessage"></div>
+          <h3 id="taskListTitle" style="margin:28px 0 0;">Aktive opgaver</h3>
+          <div id="taskList" class="task-list"><div class="task-empty">Henter opgaver...</div></div>
+        </section>
+
         <section class="card" id="createChildCard">
           <h2 id="childTitle">Opret et barn</h2>
           <p class="sub" id="childSubtitle">Vælg en familie, og opret barnets profil.</p>
@@ -465,6 +544,7 @@
   let selectedFamilyId = null;
   let selectedFamilyName = "";
   let familiesCache = [];
+  let childrenCache = [];
 
   let currentLanguage = localStorage.getItem("familytasks_language") || "da";
 
@@ -524,7 +604,39 @@
       yearError: "Indtast et gyldigt fødselsår.",
       loadError: "Kunne ikke hente familiens oplysninger.",
       familyEmpty: "Du har endnu ikke oprettet en familie.",
-      familyCreated: "Familien er oprettet."
+      familyCreated: "Familien er oprettet.",
+      taskManagementTitle: "Opgavestyring",
+      taskManagementSubtitle: "Opret opgaver, giv dem point, og vælg hvem der skal udføre dem.",
+      taskTitle: "Opgavens navn",
+      taskDescription: "Beskrivelse (valgfrit)",
+      taskPoints: "Point",
+      taskStars: "Stjerner",
+      taskRecurrence: "Gentagelse",
+      taskSelection: "Hvem vælger opgaven?",
+      taskChildren: "Tildel til børn",
+      taskChildrenHint: "Vælg mindst ét barn ved tildelte opgaver.",
+      taskCategory: "Kategori (valgfrit)",
+      taskApproval: "Kræver godkendelse fra en forælder",
+      createTask: "Opret opgave",
+      taskList: "Aktive opgaver",
+      noTasks: "Der er endnu ikke oprettet opgaver.",
+      noChildrenForTasks: "Opret først et barn, før du kan tildele opgaver.",
+      chooseChild: "Vælg mindst ét barn til denne opgave.",
+      taskSuccess: "Opgaven er oprettet!",
+      taskError: "Kunne ikke oprette opgaven.",
+      taskLoading: "Opretter opgave...",
+      taskDeactivate: "Deaktivér",
+      taskDeactivated: "Opgaven er deaktiveret.",
+      taskDeactivateError: "Kunne ikke deaktivere opgaven.",
+      assigned: "Tildelt",
+      selfSelect: "Barnet vælger selv",
+      both: "Begge dele",
+      daily: "Dagligt",
+      weekly: "Ugentligt",
+      once: "Ingen gentagelse",
+      approvalYes: "Forældregodkendelse",
+      approvalNo: "Ingen godkendelse",
+      childrenNone: "Ingen børn valgt"
     },
     en: {
       heroTitle: "Small tasks. Big achievements.",
@@ -581,7 +693,39 @@
       yearError: "Enter a valid birth year.",
       loadError: "Could not load family information.",
       familyEmpty: "You have not created a family yet.",
-      familyCreated: "Family created."
+      familyCreated: "Family created.",
+      taskManagementTitle: "Task management",
+      taskManagementSubtitle: "Create tasks, award points, and choose who should complete them.",
+      taskTitle: "Task name",
+      taskDescription: "Description (optional)",
+      taskPoints: "Points",
+      taskStars: "Stars",
+      taskRecurrence: "Repeat",
+      taskSelection: "Who chooses the task?",
+      taskChildren: "Assign to children",
+      taskChildrenHint: "Select at least one child for assigned tasks.",
+      taskCategory: "Category (optional)",
+      taskApproval: "Requires approval from a parent",
+      createTask: "Create task",
+      taskList: "Active tasks",
+      noTasks: "No tasks have been created yet.",
+      noChildrenForTasks: "Create a child first before assigning tasks.",
+      chooseChild: "Select at least one child for this task.",
+      taskSuccess: "Task created!",
+      taskError: "Could not create the task.",
+      taskLoading: "Creating task...",
+      taskDeactivate: "Deactivate",
+      taskDeactivated: "Task deactivated.",
+      taskDeactivateError: "Could not deactivate the task.",
+      assigned: "Assigned",
+      selfSelect: "Child chooses",
+      both: "Both",
+      daily: "Daily",
+      weekly: "Weekly",
+      once: "No repeat",
+      approvalYes: "Parent approval required",
+      approvalNo: "No approval required",
+      childrenNone: "No children selected"
     }
   };
 
@@ -627,6 +771,27 @@
     $("childAvatarLabel").textContent = t("childAvatar");
     $("birthYearLabel").textContent = t("birthYear");
     $("childPinLabel").textContent = t("childPin");
+
+    $("taskManagementTitle").textContent = t("taskManagementTitle");
+    $("taskManagementSubtitle").textContent = t("taskManagementSubtitle");
+    $("taskTitleLabel").textContent = t("taskTitle");
+    $("taskDescriptionLabel").textContent = t("taskDescription");
+    $("taskPointsLabel").textContent = t("taskPoints");
+    $("taskStarsLabel").textContent = t("taskStars");
+    $("taskRecurrenceLabel").textContent = t("taskRecurrence");
+    $("taskSelectionLabel").textContent = t("taskSelection");
+    $("taskChildrenLabel").textContent = t("taskChildren");
+    $("taskChildrenHint").textContent = t("taskChildrenHint");
+    $("taskCategoryLabel").textContent = t("taskCategory");
+    $("taskApprovalLabel").textContent = t("taskApproval");
+    $("createTaskButton").textContent = t("createTask");
+    $("taskListTitle").textContent = t("taskList");
+    $("taskRecurrence").options[0].textContent = t("once");
+    $("taskRecurrence").options[1].textContent = t("daily");
+    $("taskRecurrence").options[2].textContent = t("weekly");
+    $("taskSelectionType").options[0].textContent = t("selfSelect");
+    $("taskSelectionType").options[1].textContent = t("assigned");
+    $("taskSelectionType").options[2].textContent = t("both");
 
     $("formTitle").textContent = t(isSignup ? "signupTitle" : "loginTitle");
     $("formSubtitle").textContent = t(isSignup ? "signupSubtitle" : "loginSubtitle");
@@ -723,6 +888,7 @@
       setMessage("familyMessage", t("loadError") + " " + childrenError.message);
       return;
     }
+    childrenCache = children || [];
 
     $("createFamilyCard").classList.add("hidden");
     $("familyListSection").classList.remove("hidden");
@@ -822,6 +988,9 @@
     $("selectedFamilyText").textContent = selectedFamilyName
       ? t("selected") + ": " + selectedFamilyName
       : t("noFamilySelected");
+
+    renderTaskChildChoices();
+    await loadTasks();
   }
 
   function renderFamilies(families, memberships, children) {
@@ -912,6 +1081,191 @@
       ? t("selected") + ": " + selectedFamilyName
       : t("noFamilySelected");
   }
+
+  function renderTaskChildChoices() {
+    const wrap = $("taskChildrenWrap");
+    const choices = $("taskChildChoices");
+    choices.innerHTML = "";
+    const children = childrenCache.filter(child => child.family_id === selectedFamilyId);
+    const needsAssignments = $("taskSelectionType").value !== "self_select";
+    wrap.classList.toggle("hidden", !needsAssignments);
+
+    if (!children.length) {
+      choices.appendChild(makeTextElement("div", t("noChildrenForTasks"), "task-hint"));
+      return;
+    }
+
+    children.forEach(child => {
+      const label = document.createElement("label");
+      label.className = "task-child-option";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.value = child.id;
+      checkbox.className = "task-child-checkbox";
+      const name = document.createElement("span");
+      name.textContent = (child.avatar_url || "🙂") + " " + child.name;
+      label.append(checkbox, name);
+      choices.appendChild(label);
+    });
+  }
+
+  async function loadTasks() {
+    const list = $("taskList");
+    if (!selectedFamilyId) {
+      list.innerHTML = "";
+      list.appendChild(makeTextElement("div", t("noFamilySelected"), "task-empty"));
+      return;
+    }
+
+    list.innerHTML = "";
+    list.appendChild(makeTextElement("div", t("loading"), "task-empty"));
+
+    const { data: tasks, error } = await db
+      .from("tasks")
+      .select("id, title, description, category, selection_type, recurrence, points, stars, requires_approval, is_active")
+      .eq("family_id", selectedFamilyId)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      list.innerHTML = "";
+      list.appendChild(makeTextElement("div", t("taskError") + " " + error.message, "task-empty"));
+      return;
+    }
+
+    list.innerHTML = "";
+    if (!tasks || tasks.length === 0) {
+      list.appendChild(makeTextElement("div", t("noTasks"), "task-empty"));
+      return;
+    }
+
+    tasks.forEach(task => {
+      const item = document.createElement("div");
+      item.className = "task-item";
+      const info = document.createElement("div");
+      const title = makeTextElement("h4", task.title);
+      info.appendChild(title);
+      if (task.description) info.appendChild(makeTextElement("div", task.description, "task-meta"));
+      const mode = task.selection_type === "assigned" ? t("assigned") :
+        task.selection_type === "both" ? t("both") : t("selfSelect");
+      const repeat = task.recurrence === "daily" ? t("daily") :
+        task.recurrence === "weekly" ? t("weekly") : t("once");
+      const approval = task.requires_approval ? t("approvalYes") : t("approvalNo");
+      const meta = ["⭐ " + task.stars, "✦ " + task.points + " " + t("taskPoints").toLowerCase(), mode, repeat, approval];
+      if (task.category) meta.push(task.category);
+      info.appendChild(makeTextElement("div", meta.join(" · "), "task-meta"));
+
+      const deactivate = document.createElement("button");
+      deactivate.type = "button";
+      deactivate.className = "secondary";
+      deactivate.textContent = t("taskDeactivate");
+      deactivate.addEventListener("click", () => deactivateTask(task.id, deactivate));
+      item.append(info, deactivate);
+      list.appendChild(item);
+    });
+  }
+
+  async function deactivateTask(taskId, button) {
+    if (!confirm(currentLanguage === "da" ? "Vil du deaktivere denne opgave?" : "Deactivate this task?")) return;
+    button.disabled = true;
+    const { error } = await db
+      .from("tasks")
+      .update({ is_active: false })
+      .eq("id", taskId)
+      .eq("family_id", selectedFamilyId);
+    if (error) {
+      setMessage("taskMessage", t("taskDeactivateError") + " " + error.message);
+      button.disabled = false;
+      return;
+    }
+    setMessage("taskMessage", t("taskDeactivated"), "success");
+    await loadTasks();
+  }
+
+  $("taskSelectionType").addEventListener("change", renderTaskChildChoices);
+
+  $("taskForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    clearMessage("taskMessage");
+    if (!selectedFamilyId) {
+      setMessage("taskMessage", t("noFamilySelected"));
+      return;
+    }
+
+    const selectionType = $("taskSelectionType").value;
+    const selectedChildren = Array.from(document.querySelectorAll(".task-child-checkbox:checked"))
+      .map(input => input.value);
+    if (selectionType !== "self_select" && selectedChildren.length === 0) {
+      setMessage("taskMessage", t("chooseChild"));
+      return;
+    }
+
+    const title = $("taskTitle").value.trim();
+    const points = Number($("taskPoints").value);
+    const stars = Number($("taskStars").value);
+    if (!title || !Number.isInteger(points) || points < 0 || !Number.isInteger(stars) || stars < 0) {
+      setMessage("taskMessage", t("invalid"));
+      return;
+    }
+
+    const button = $("createTaskButton");
+    button.disabled = true;
+    button.textContent = t("taskLoading");
+
+    let createdTaskId = null;
+    try {
+      const taskData = {
+        family_id: selectedFamilyId,
+        title,
+        description: $("taskDescription").value.trim() || null,
+        category: $("taskCategory").value.trim() || null,
+        selection_type: selectionType,
+        recurrence: $("taskRecurrence").value,
+        points,
+        stars,
+        requires_approval: $("taskRequiresApproval").checked,
+        created_by: currentUser.id,
+        is_active: true
+      };
+
+      const { data: task, error: taskError } = await db
+        .from("tasks")
+        .insert(taskData)
+        .select("id")
+        .single();
+      if (taskError) throw taskError;
+      createdTaskId = task.id;
+
+      if (selectionType !== "self_select") {
+        const assignments = selectedChildren.map(childId => ({
+          family_id: selectedFamilyId,
+          task_id: createdTaskId,
+          child_id: childId
+        }));
+        const { error: assignmentError } = await db
+          .from("task_assignments")
+          .insert(assignments);
+        if (assignmentError) {
+          await db.from("tasks").delete().eq("id", createdTaskId).eq("family_id", selectedFamilyId);
+          throw assignmentError;
+        }
+      }
+
+      $("taskForm").reset();
+      $("taskPoints").value = 10;
+      $("taskStars").value = 1;
+      $("taskRequiresApproval").checked = true;
+      $("taskSelectionType").value = "self_select";
+      renderTaskChildChoices();
+      setMessage("taskMessage", t("taskSuccess"), "success");
+      await loadTasks();
+    } catch (error) {
+      setMessage("taskMessage", t("taskError") + " " + (error.message || ""));
+    } finally {
+      button.disabled = false;
+      button.textContent = t("createTask");
+    }
+  });
 
   $("languageSelect").addEventListener("change", e => {
     currentLanguage = e.target.value;
