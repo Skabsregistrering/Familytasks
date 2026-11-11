@@ -5,36 +5,196 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FamilyTasks – Børneside</title>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f3f6fc;color:#202b45}
-header{background:#fff;padding:20px;text-align:center;box-shadow:0 2px 12px #0000000b}
-.logo{font-size:25px;font-weight:800;color:#5268db}
-main{max-width:650px;margin:30px auto;padding:16px}
-.card{background:white;border-radius:22px;padding:25px;margin-bottom:18px;box-shadow:0 5px 22px #26345b0d}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f3f6fc;
+  color:#202b45;
+}
+
+header{
+  background:#fff;
+  padding:20px;
+  text-align:center;
+  box-shadow:0 2px 12px #0000000b;
+}
+
+.logo{
+  font-size:25px;
+  font-weight:800;
+  color:#5268db;
+}
+
+main{
+  max-width:650px;
+  margin:30px auto;
+  padding:16px;
+}
+
+.card{
+  background:white;
+  border-radius:22px;
+  padding:25px;
+  margin-bottom:18px;
+  box-shadow:0 5px 22px #26345b0d;
+}
+
 .center{text-align:center}
-.avatar{font-size:65px;margin:10px}
-h1{font-size:27px;margin:10px 0}
-h2{font-size:21px;margin-top:0}
-input{width:100%;padding:17px;border:2px solid #e1e5ef;border-radius:14px;font-size:24px;text-align:center;letter-spacing:10px;margin:15px 0}
-button{width:100%;padding:16px;border:0;border-radius:14px;background:#5268db;color:white;font-size:17px;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.6;cursor:default}
-.stats{display:flex;gap:12px}
-.stat{flex:1;background:#f2f4ff;padding:18px 8px;border-radius:16px;text-align:center}
-.stat strong{display:block;font-size:28px;margin-top:7px}
-.task{padding:17px;border:1px solid #e8ebf3;border-radius:18px;margin:16px 0;overflow:hidden}
-.task-image{width:100%;max-height:320px;aspect-ratio:1.15;object-fit:contain;display:block;margin:0 auto 16px;border-radius:14px;background:#f7f8fc}
-.task-title{font-weight:bold;font-size:19px}
-.task-info{color:#68738c;font-size:14px;margin-top:8px}
-.task-description{line-height:1.5;color:#45516b}
-.task button{margin-top:14px;background:#26945b}
-.task button:disabled{background:#8992a8}
-.message{margin-top:14px;text-align:center;color:#c0392b}
-#pageMessage{color:#26945b;font-weight:bold}
+
+.avatar{
+  font-size:65px;
+  margin:10px;
+}
+
+h1{
+  font-size:27px;
+  margin:10px 0;
+}
+
+h2{
+  font-size:21px;
+  margin-top:0;
+}
+
+input{
+  width:100%;
+  padding:17px;
+  border:2px solid #e1e5ef;
+  border-radius:14px;
+  font-size:24px;
+  text-align:center;
+  letter-spacing:10px;
+  margin:15px 0;
+}
+
+button{
+  width:100%;
+  padding:16px;
+  border:0;
+  border-radius:14px;
+  background:#5268db;
+  color:white;
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:disabled{
+  opacity:.6;
+  cursor:default;
+}
+
+.stats{
+  display:flex;
+  gap:12px;
+}
+
+.stat{
+  flex:1;
+  background:#f2f4ff;
+  padding:18px 8px;
+  border-radius:16px;
+  text-align:center;
+}
+
+.stat strong{
+  display:block;
+  font-size:28px;
+  margin-top:7px;
+}
+
+.task{
+  padding:17px;
+  border:1px solid #e8ebf3;
+  border-radius:18px;
+  margin:16px 0;
+  overflow:hidden;
+}
+
+.task-image,
+.task-video{
+  width:100%;
+  max-height:320px;
+  aspect-ratio:1.15;
+  object-fit:contain;
+  display:block;
+  margin:0 auto 16px;
+  border-radius:14px;
+  background:#f7f8fc;
+}
+
+.task-title{
+  font-weight:bold;
+  font-size:19px;
+}
+
+.task-info{
+  color:#68738c;
+  font-size:14px;
+  margin-top:8px;
+}
+
+.task-description{
+  line-height:1.5;
+  color:#45516b;
+}
+
+.task button{
+  margin-top:14px;
+  background:#26945b;
+}
+
+.task button:disabled{
+  background:#8992a8;
+}
+
+.status{
+  margin-top:14px;
+  padding:13px;
+  border-radius:12px;
+  font-weight:bold;
+  text-align:center;
+}
+
+.status-pending{
+  background:#fff4d8;
+  color:#946200;
+}
+
+.status-approved{
+  background:#e1f7e9;
+  color:#207a43;
+}
+
+.status-rejected{
+  background:#fde8e8;
+  color:#b83232;
+}
+
+.message{
+  margin-top:14px;
+  text-align:center;
+  color:#c0392b;
+}
+
+#pageMessage{
+  color:#26945b;
+  font-weight:bold;
+}
+
 .hidden{display:none}
-.small{font-size:13px;color:#778099}
+
+.small{
+  font-size:13px;
+  color:#778099;
+}
 </style>
 </head>
+
 <body>
 
 <header>
@@ -42,19 +202,29 @@ button:disabled{opacity:.6;cursor:default}
 </header>
 
 <main>
+
   <section class="card center" id="loginCard">
     <div class="avatar">👋</div>
     <h1>Hej!</h1>
     <p>Indtast din 4-cifrede kode for at komme ind.</p>
-    <input id="pin" type="password" inputmode="numeric"
-      maxlength="4" placeholder="••••" autocomplete="off">
+
+    <input
+      id="pin"
+      type="password"
+      inputmode="numeric"
+      maxlength="4"
+      placeholder="••••"
+      autocomplete="off"
+    >
+
     <button id="loginButton">Log ind</button>
     <div class="message" id="loginMessage"></div>
   </section>
 
   <section id="dashboard" class="hidden">
+
     <div class="card center">
-      <div class="avatar" id="avatar"></div>
+      <div class="avatar" id="avatar">😊</div>
       <h1 id="childName"></h1>
       <p>Her er dine opgaver!</p>
     </div>
@@ -65,6 +235,7 @@ button:disabled{opacity:.6;cursor:default}
           ⭐ Stjerner
           <strong id="stars">0</strong>
         </div>
+
         <div class="stat">
           🏆 Point
           <strong id="points">0</strong>
@@ -78,18 +249,29 @@ button:disabled{opacity:.6;cursor:default}
     </div>
 
     <button id="refreshButton">Opdater mine opgaver</button>
+
     <br><br>
-    <button id="logoutButton" style="background:#8992a8">Log ud</button>
+
+    <button
+      id="logoutButton"
+      style="background:#8992a8"
+    >Log ud</button>
+
   </section>
 
   <p class="message" id="pageMessage"></p>
+
 </main>
 
 <script>
-const SUPABASE_URL = "https://bhupbdwybahlkssweiht.supabase.co";
-const SUPABASE_KEY = "sb_publishable_kTdbLZD9UmNZ_bsxSUhivQ_8bIOJ-Wa";
+const SUPABASE_URL =
+  "https://bhupbdwybahlkssweiht.supabase.co";
 
-const childId = new URLSearchParams(location.search).get("child_id");
+const SUPABASE_KEY =
+  "sb_publishable_kTdbLZD9UmNZ_bsxSUhivQ_8bIOJ-Wa";
+
+const childId =
+  new URLSearchParams(location.search).get("child_id");
 
 const loginCard = document.getElementById("loginCard");
 const dashboard = document.getElementById("dashboard");
@@ -107,6 +289,10 @@ function showError(message){
   document.getElementById("loginMessage").textContent = message;
 }
 
+function showPageMessage(message){
+  document.getElementById("pageMessage").textContent = message;
+}
+
 async function callFunction(name, body){
   const response = await fetch(
     `${SUPABASE_URL}/functions/v1/${name}`,
@@ -117,7 +303,13 @@ async function callFunction(name, body){
     }
   );
 
-  const data = await response.json();
+  let data;
+
+  try{
+    data = await response.json();
+  }catch{
+    throw new Error("Serveren returnerede et ugyldigt svar.");
+  }
 
   if(!response.ok){
     throw new Error(data.message || "Der opstod en fejl.");
@@ -126,101 +318,201 @@ async function callFunction(name, body){
   return data;
 }
 
+function isVideoUrl(url){
+  return /\.mp4(?:[?#]|$)/i.test(url);
+}
+
+function createTaskMedia(task){
+  if(!task.image_url) return null;
+
+  if(isVideoUrl(task.image_url)){
+    const video = document.createElement("video");
+
+    video.className = "task-video";
+    video.src = task.image_url;
+    video.controls = true;
+    video.playsInline = true;
+    video.preload = "metadata";
+
+    video.onerror = () => {
+      video.replaceWith(
+        document.createTextNode("Videoen kunne ikke indlæses.")
+      );
+    };
+
+    return video;
+  }
+
+  const image = document.createElement("img");
+
+  image.className = "task-image";
+  image.src = task.image_url;
+  image.alt = "Sådan udfører du opgaven: " + task.title;
+  image.loading = "lazy";
+
+  image.onerror = () => {
+    image.remove();
+  };
+
+  return image;
+}
+
+function createStatus(text, className){
+  const status = document.createElement("div");
+
+  status.className = "status " + className;
+  status.textContent = text;
+
+  return status;
+}
+
 async function submitTask(taskId, button){
-  const token = sessionStorage.getItem("familytasks_token_" + childId);
+  const token = sessionStorage.getItem(
+    "familytasks_token_" + childId
+  );
+
   if(!token) return;
 
   button.disabled = true;
   button.textContent = "Sender...";
 
+  showPageMessage("");
+
   try{
-    const result = await callFunction("child-submit-task", {
-      token: token,
-      task_id: taskId
-    });
+    const result = await callFunction(
+      "child-submit-task",
+      {
+        token:token,
+        task_id:taskId
+      }
+    );
 
     if(!result.success){
-      throw new Error(result.message || "Opgaven kunne ikke registreres.");
+      throw new Error(
+        result.message || "Opgaven kunne ikke registreres."
+      );
     }
 
     await loadDashboard(token);
 
-    document.getElementById("pageMessage").textContent =
-      result.message || "Opgaven er registreret!";
+    showPageMessage(
+      result.message || "Opgaven er registreret!"
+    );
 
   }catch(error){
-    document.getElementById("pageMessage").textContent = error.message;
+    showPageMessage(error.message);
+
     button.disabled = false;
     button.textContent = "Jeg har udført opgaven";
   }
 }
 
 async function loadDashboard(token){
-  const data = await callFunction("child-dashboard",{token});
+  const data = await callFunction(
+    "child-dashboard",
+    {token}
+  );
 
   if(!data.success){
-    throw new Error(data.message || "Sessionen er udløbet.");
+    throw new Error(
+      data.message || "Sessionen er udløbet."
+    );
   }
 
-  document.getElementById("childName").textContent = data.child.name;
-  document.getElementById("avatar").textContent = data.child.avatar_url || "😊";
-  document.getElementById("stars").textContent = data.stars ?? 0;
-  document.getElementById("points").textContent = data.points ?? 0;
+  document.getElementById("childName").textContent =
+    data.child.name;
+
+  document.getElementById("avatar").textContent =
+    data.child.avatar_url || "😊";
+
+  document.getElementById("stars").textContent =
+    data.stars ?? 0;
+
+  document.getElementById("points").textContent =
+    data.points ?? 0;
 
   const taskList = document.getElementById("taskList");
+
   taskList.replaceChildren();
 
   if(!data.tasks || data.tasks.length === 0){
     const empty = document.createElement("p");
-    empty.textContent = "Der er endnu ikke oprettet opgaver til dig 😊";
+
+    empty.textContent =
+      "Der er endnu ikke oprettet opgaver til dig 😊";
+
     taskList.appendChild(empty);
-  } else {
+
+  }else{
+
     data.tasks.forEach(task => {
       const item = document.createElement("div");
+
       item.className = "task";
 
-      // Vis opgavens GIF eller billede
-      if(task.image_url){
-        const image = document.createElement("img");
-        image.className = "task-image";
-        image.src = task.image_url;
-        image.alt = "Sådan udfører du opgaven: " + task.title;
-        image.loading = "lazy";
+      const media = createTaskMedia(task);
 
-        image.onerror = () => {
-          image.remove();
-        };
-
-        item.appendChild(image);
+      if(media){
+        item.appendChild(media);
       }
 
       const title = document.createElement("div");
+
       title.className = "task-title";
       title.textContent = task.title;
 
       const info = document.createElement("div");
+
       info.className = "task-info";
-      info.textContent = `⭐ ${task.stars} stjerner · 🏆 ${task.points} point`;
+      info.textContent =
+        `⭐ ${task.stars} stjerner · 🏆 ${task.points} point`;
 
       item.append(title,info);
 
       if(task.description){
         const description = document.createElement("p");
+
         description.className = "task-description";
         description.textContent = task.description;
+
         item.appendChild(description);
       }
 
-      if(task.completed_today){
-        const done = document.createElement("div");
-        done.textContent = "✓ Registreret i dag";
-        done.style.color = "#26945b";
-        done.style.marginTop = "12px";
-        item.appendChild(done);
-      } else {
+      const status = task.completion_status;
+
+      if(status === "pending"){
+        item.appendChild(
+          createStatus(
+            "⏳ Afventer godkendelse fra mor eller far",
+            "status-pending"
+          )
+        );
+
+      }else if(status === "approved" || status === "completed"){
+        item.appendChild(
+          createStatus(
+            "✓ Godkendt – flot klaret!",
+            "status-approved"
+          )
+        );
+
+      }else if(status === "rejected"){
+        item.appendChild(
+          createStatus(
+            "Opgaven er afvist – spørg mor eller far",
+            "status-rejected"
+          )
+        );
+
+      }else{
         const button = document.createElement("button");
+
         button.textContent = "Jeg har udført opgaven";
-        button.addEventListener("click", () => submitTask(task.id, button));
+
+        button.addEventListener("click", () => {
+          submitTask(task.id,button);
+        });
+
         item.appendChild(button);
       }
 
@@ -247,53 +539,76 @@ loginButton.addEventListener("click", async () => {
 
   loginButton.disabled = true;
   loginButton.textContent = "Logger ind...";
+
   showError("");
 
   try{
-    const data = await callFunction("child-login",{
-      child_id:childId,
-      pin
-    });
+    const data = await callFunction(
+      "child-login",
+      {
+        child_id:childId,
+        pin
+      }
+    );
 
     if(!data.success){
       throw new Error(data.message || "Forkert PIN.");
     }
 
-    sessionStorage.setItem("familytasks_token_" + childId, data.token);
+    sessionStorage.setItem(
+      "familytasks_token_" + childId,
+      data.token
+    );
+
     pinInput.value = "";
+
     await loadDashboard(data.token);
 
   }catch(error){
     showError(error.message);
+
   }finally{
     loginButton.disabled = false;
     loginButton.textContent = "Log ind";
   }
 });
 
-document.getElementById("refreshButton").addEventListener("click",async()=>{
-  const token = sessionStorage.getItem("familytasks_token_" + childId);
-  if(!token)return;
+document.getElementById("refreshButton")
+.addEventListener("click",async()=>{
+  const token = sessionStorage.getItem(
+    "familytasks_token_" + childId
+  );
+
+  if(!token) return;
 
   try{
     await loadDashboard(token);
-    document.getElementById("pageMessage").textContent = "";
+    showPageMessage("");
+
   }catch(error){
-    document.getElementById("pageMessage").textContent = error.message;
+    showPageMessage(error.message);
   }
 });
 
-document.getElementById("logoutButton").addEventListener("click",()=>{
-  sessionStorage.removeItem("familytasks_token_" + childId);
+document.getElementById("logoutButton")
+.addEventListener("click",()=>{
+  sessionStorage.removeItem(
+    "familytasks_token_" + childId
+  );
+
   dashboard.classList.add("hidden");
   loginCard.classList.remove("hidden");
+
   pinInput.value = "";
+
   showError("");
-  document.getElementById("pageMessage").textContent = "";
+  showPageMessage("");
 });
 
 pinInput.addEventListener("keydown",event=>{
-  if(event.key === "Enter") loginButton.click();
+  if(event.key === "Enter"){
+    loginButton.click();
+  }
 });
 
 async function restoreSession(){
@@ -303,13 +618,19 @@ async function restoreSession(){
     return;
   }
 
-  const token = sessionStorage.getItem("familytasks_token_" + childId);
+  const token = sessionStorage.getItem(
+    "familytasks_token_" + childId
+  );
 
   if(token){
     try{
       await loadDashboard(token);
+
     }catch(error){
-      sessionStorage.removeItem("familytasks_token_" + childId);
+      sessionStorage.removeItem(
+        "familytasks_token_" + childId
+      );
+
       showError("Log ind igen med din PIN.");
     }
   }
@@ -317,5 +638,6 @@ async function restoreSession(){
 
 restoreSession();
 </script>
+
 </body>
 </html>
