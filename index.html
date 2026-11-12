@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="da">
 <head>
@@ -53,9 +54,9 @@ input:focus,select:focus{border-color:#7668e5;box-shadow:0 0 0 3px #7668e51c}
 .child-card small{color:#858296}
 .empty-children{color:#858296;font-size:14px;padding:12px 0}
 .footer{text-align:center;color:#aaa7b7;font-size:12px;margin-top:35px}
-.task-panel,.approval-panel{max-width:900px;margin:0 auto 22px}
-.task-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
-.task-form-grid .full{grid-column:1/-1}
+.task-panel,.approval-panel,.reward-panel{max-width:900px;margin:0 auto 22px}
+.task-form-grid,.reward-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
+.task-form-grid .full,.reward-form-grid .full{grid-column:1/-1}
 .task-child-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-top:9px}
 .task-child-option{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid #e8e5f0;border-radius:11px;background:#faf9fd;font-size:14px}
 .task-child-option input{width:auto;margin:0;accent-color:#6758d8}
@@ -77,26 +78,31 @@ input:focus,select:focus{border-color:#7668e5;box-shadow:0 0 0 3px #7668e51c}
 .history-status{display:inline-block;margin-top:8px;padding:5px 9px;border-radius:8px;font-size:12px;font-weight:700}
 .history-status.approved{background:#e5f7eb;color:#207442}
 .history-status.rejected{background:#fff0f0;color:#a83232}
-.reward-panel{max-width:900px;margin:0 auto 22px}
-.reward-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
-.reward-form-grid .full{grid-column:1/-1}
 .reward-list{display:grid;gap:11px;margin-top:18px}
 .reward-item{border:1px solid #eceaf3;border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:center;gap:14px}
 .reward-item h4{margin:0 0 6px;font-size:16px}
 .reward-cost{color:#858296;font-size:13px;line-height:1.5}
-@media(max-width:600px){.reward-form-grid{grid-template-columns:1fr}.reward-form-grid .full{grid-column:auto}.reward-item{align-items:flex-start;flex-direction:column}}
+.invitation-panel{max-width:900px;margin:0 auto 22px}
+.invitation-list{display:grid;gap:10px;margin-top:16px}
+.invitation-item{border:1px solid #eceaf3;border-radius:14px;padding:15px;overflow-wrap:anywhere}
+.invitation-link{display:flex;gap:8px;align-items:center;margin-top:12px}
+.invitation-link input{flex:1;min-width:0}
+.invitation-link button{flex-shrink:0;margin:0}
+.invitation-role{font-size:13px;color:#858296;margin-top:5px}
 @media(max-width:600px){
+.reward-form-grid,.task-form-grid{grid-template-columns:1fr}
+.reward-form-grid .full,.task-form-grid .full{grid-column:auto}
+.reward-item{align-items:flex-start;flex-direction:column}
 .page{width:min(100% - 22px,1050px);padding-top:17px}
 header{margin-bottom:30px}
 .card{padding:22px 18px}
 .hero p{font-size:15px}
 .welcome{padding:23px}
 .brand{font-size:19px}
-.task-form-grid{grid-template-columns:1fr}
-.task-form-grid .full{grid-column:auto}
 .task-item,.approval-item{align-items:flex-start;flex-direction:column}
 .approval-actions{width:100%}
 .approval-actions button{flex:1}
+.invitation-link{align-items:stretch;flex-direction:column}
 }
 </style>
 </head>
@@ -105,10 +111,7 @@ header{margin-bottom:30px}
 <div class="page">
 
 <header>
-  <div class="brand">
-    <div class="logo">✦</div>
-    FamilyTasks
-  </div>
+  <div class="brand"><div class="logo">✦</div>FamilyTasks</div>
   <div class="top-actions">
     <select class="language" id="languageSelect" aria-label="Language">
       <option value="da">Dansk</option>
@@ -127,6 +130,7 @@ header{margin-bottom:30px}
 <section class="card" id="authCard">
   <h2 id="formTitle">Velkommen tilbage!</h2>
   <p class="sub" id="formSubtitle">Log ind på din familiekonto.</p>
+  <p class="task-hint hidden" id="inviteAuthNotice"></p>
   <form id="authForm">
     <div id="nameField" class="hidden">
       <label for="displayName" id="nameLabel">Dit navn</label>
@@ -189,20 +193,37 @@ header{margin-bottom:30px}
     <h2 class="section-title" id="myFamiliesTitle">Mine familier</h2>
     <div id="familyList"></div>
 
+    <section class="card invitation-panel hidden" id="invitationPanel">
+      <h2 id="invitationTitle">Invitér en forælder</h2>
+      <p class="sub" id="invitationSubtitle">Invitér en anden forælder til familien. Du skal selv sende invitationslinket.</p>
+      <form id="invitationForm">
+        <label for="invitationEmail" id="invitationEmailLabel">Forælderens e-mail</label>
+        <input id="invitationEmail" type="email" required autocomplete="email">
+        <label for="invitationRole" id="invitationRoleLabel">Rolle</label>
+        <select id="invitationRole">
+          <option value="parent">Forælder</option>
+          <option value="admin">Administrator</option>
+        </select>
+        <button class="primary" id="createInvitationButton" type="submit">Opret invitation</button>
+      </form>
+      <div class="message" id="invitationMessage"></div>
+      <div id="createdInvitationLink" class="hidden"></div>
+      <h3 id="pendingInvitationsTitle" style="margin:26px 0 0;">Ventende invitationer</h3>
+      <div id="invitationList" class="invitation-list">
+        <div class="task-empty">Henter invitationer...</div>
+      </div>
+    </section>
+
     <section class="card approval-panel" id="approvalPanel">
       <div class="approval-header">
         <h2 id="approvalTitle">Godkend opgaver</h2>
         <span class="approval-count" id="approvalCount">0</span>
       </div>
       <p class="sub" id="approvalSubtitle">Se opgaver, børnene har markeret som udført.</p>
-      <div id="pendingApprovalList" class="approval-list">
-        <div class="task-empty">Henter opgaver...</div>
-      </div>
+      <div id="pendingApprovalList" class="approval-list"><div class="task-empty">Henter opgaver...</div></div>
       <div class="message" id="approvalMessage"></div>
       <h3 class="history-title" id="approvalHistoryTitle">Seneste behandlinger</h3>
-      <div id="approvalHistoryList" class="approval-list">
-        <div class="task-empty">Henter historik...</div>
-      </div>
+      <div id="approvalHistoryList" class="approval-list"><div class="task-empty">Henter historik...</div></div>
     </section>
 
     <section class="card reward-panel" id="rewardManagementCard">
@@ -353,28 +374,25 @@ header{margin-bottom:30px}
   let familiesCache = [];
   let childrenCache = [];
   let currentLanguage = localStorage.getItem("familytasks_language") || "da";
+  const invitationToken = new URLSearchParams(window.location.search).get("invite");
+  let invitationAcceptStarted = false;
 
   const translations = {
     da: {
       heroTitle:"Små opgaver. Store sejre.",
       heroText:"Gør hverdagens opgaver sjovere, og hjælp børnene med at blive mere selvstændige.",
-      loginTitle:"Velkommen tilbage!",
-      loginSubtitle:"Log ind på din familiekonto.",
-      signupTitle:"Opret din konto",
-      signupSubtitle:"Kom i gang og skab en gladere hverdag.",
+      loginTitle:"Velkommen tilbage!",loginSubtitle:"Log ind på din familiekonto.",
+      signupTitle:"Opret din konto",signupSubtitle:"Kom i gang og skab en gladere hverdag.",
       name:"Dit navn",email:"E-mail",password:"Adgangskode",
-      login:"Log ind",signup:"Opret konto",
-      noAccount:"Har du ikke en konto?",hasAccount:"Har du allerede en konto?",
+      login:"Log ind",signup:"Opret konto",noAccount:"Har du ikke en konto?",hasAccount:"Har du allerede en konto?",
       welcome:"Velkommen!",welcomeText:"Lad os gøre familien klar til FamilyTasks.",
-      createFamily:"Opret din familie",
-      familySubtitle:"Start med at give familien et navn. Du kan ændre indstillinger senere.",
-      familyName:"Familiens navn",currency:"Valuta",timezone:"Tidszone",
-      createButton:"Opret familie",myFamilies:"Mine familier",
-      anotherFamily:"Opret endnu en familie",
-      anotherText:"Du kan oprette flere familier på samme konto.",
-      logout:"Log ud",loginSuccess:"Du er logget ind.",
-      signupSuccess:"Din konto er oprettet.",familySuccess:"Familien er oprettet!",
-      loading:"Vent venligst...",invalid:"Kontrollér dine oplysninger, og prøv igen.",
+      createFamily:"Opret din familie",familySubtitle:"Start med at give familien et navn. Du kan ændre indstillinger senere.",
+      familyName:"Familiens navn",currency:"Valuta",timezone:"Tidszone",createButton:"Opret familie",
+      myFamilies:"Mine familier",anotherFamily:"Opret endnu en familie",
+      anotherText:"Du kan oprette flere familier på samme konto.",logout:"Log ud",
+      loginSuccess:"Du er logget ind.",signupSuccess:"Din konto er oprettet.",
+      familySuccess:"Familien er oprettet!",loading:"Vent venligst...",
+      invalid:"Kontrollér dine oplysninger, og prøv igen.",
       familyError:"Kunne ikke oprette familien. Prøv igen.",
       authError:"Der opstod en fejl. Kontrollér e-mail og adgangskode.",
       confirmEmail:"Kontoen er oprettet. Bekræft din e-mail via linket, før du logger ind.",
@@ -382,37 +400,32 @@ header{margin-bottom:30px}
       childTitle:"Opret et barn",childSubtitle:"Vælg en familie, og opret barnets profil.",
       childName:"Barnets navn",childAvatar:"Vælg avatar",birthYear:"Fødselsår (valgfrit)",
       childPin:"Barnets 4-cifrede PIN-kode",createChild:"Opret barn",
-      childSuccess:"Barnets profil er oprettet!",
-      childError:"Kunne ikke oprette barnets profil.",
+      childSuccess:"Barnets profil er oprettet!",childError:"Kunne ikke oprette barnets profil.",
       children:"Børn",noChildren:"Der er endnu ikke oprettet børn i denne familie.",
       childLoading:"Opretter barn...",noFamilySelected:"Vælg først en familie ovenfor.",
       childPinError:"PIN-koden skal bestå af præcis 4 cifre.",
-      yearError:"Indtast et gyldigt fødselsår.",
-      loadError:"Kunne ikke hente familiens oplysninger.",
+      yearError:"Indtast et gyldigt fødselsår.",loadError:"Kunne ikke hente familiens oplysninger.",
       taskManagementTitle:"Opgavestyring",
       taskManagementSubtitle:"Opret opgaver, giv dem point, og vælg hvem der skal udføre dem.",
       taskTitle:"Opgavens navn",taskDescription:"Beskrivelse (valgfrit)",
       taskPoints:"Point",taskStars:"Stjerner",taskRecurrence:"Gentagelse",
       taskSelection:"Hvem vælger opgaven?",taskChildren:"Tildel til børn",
       taskChildrenHint:"Vælg mindst ét barn ved tildelte opgaver.",
-      taskCategory:"Kategori (valgfrit)",
-      taskApproval:"Kræver godkendelse fra en forælder",
+      taskCategory:"Kategori (valgfrit)",taskApproval:"Kræver godkendelse fra en forælder",
       createTask:"Opret opgave",taskList:"Aktive opgaver",
       noTasks:"Der er endnu ikke oprettet opgaver.",
       noChildrenForTasks:"Opret først et barn, før du kan tildele opgaver.",
       chooseChild:"Vælg mindst ét barn til denne opgave.",
       taskSuccess:"Opgaven er oprettet!",taskError:"Kunne ikke oprette opgaven.",
       taskLoading:"Opretter opgave...",taskDeactivate:"Deaktivér",
-      taskDeactivated:"Opgaven er deaktiveret.",
-      taskDeactivateError:"Kunne ikke deaktivere opgaven.",
+      taskDeactivated:"Opgaven er deaktiveret.",taskDeactivateError:"Kunne ikke deaktivere opgaven.",
       assigned:"Tildelt",selfSelect:"Barnet vælger selv",both:"Begge dele",
       daily:"Dagligt",weekly:"Ugentligt",once:"Ingen gentagelse",
       approvalYes:"Forældregodkendelse",approvalNo:"Ingen godkendelse",
       approvalTitle:"Godkend opgaver",
       approvalSubtitle:"Se opgaver, børnene har markeret som udført.",
       approvalHistoryTitle:"Seneste behandlinger",
-      approvalLoading:"Henter opgaver...",
-      approvalEmpty:"Ingen opgaver afventer godkendelse.",
+      approvalLoading:"Henter opgaver...",approvalEmpty:"Ingen opgaver afventer godkendelse.",
       approvalHistoryEmpty:"Der er endnu ingen behandlede opgaver.",
       approvalError:"Kunne ikke hente opgaver til godkendelse:",
       approvalApprove:"Godkend",approvalReject:"Afvis",
@@ -420,21 +433,44 @@ header{margin-bottom:30px}
       approvalSuccess:"Opgaven er behandlet.",
       approvalActionError:"Kunne ikke behandle opgaven:",
       approvalChild:"Barn",approvalReward:"Belønning",
-      rewardManagementTitle:"Belønningsstyring",rewardManagementSubtitle:"Opret belønninger, som børnene kan spare point og stjerner op til.",
-      rewardTitle:"Belønningens navn",rewardDescription:"Beskrivelse (valgfrit)",rewardPointsCost:"Pris i point",rewardStarsCost:"Pris i stjerner",
-      rewardCostHint:"Sæt mindst én pris til mere end 0.",createReward:"Opret belønning",rewardList:"Aktive belønninger",rewardRequests:"Børnenes ønsker",
-      rewardSuccess:"Belønningen er oprettet!",rewardError:"Kunne ikke oprette belønningen:",rewardEmpty:"Der er endnu ikke oprettet belønninger.",
-      rewardDeactivate:"Deaktivér",rewardDeactivated:"Belønningen er deaktiveret.",rewardDeactivateError:"Kunne ikke deaktivere belønningen:",
-      rewardRequestEmpty:"Der er ingen ønsker, der afventer godkendelse.",rewardRequestError:"Kunne ikke hente børnenes ønsker:",
-      rewardApprove:"Godkend",rewardReject:"Afvis",rewardApproved:"Godkendt",rewardRejected:"Afvist",rewardReviewError:"Kunne ikke behandle ønsket:",rewardReviewSuccess:"Ønsket er behandlet.",
-      rewardPending:"Afventer",rewardChild:"Barn",rewardCost:"Pris"
+      rewardManagementTitle:"Belønningsstyring",
+      rewardManagementSubtitle:"Opret belønninger, som børnene kan spare point og stjerner op til.",
+      rewardTitle:"Belønningens navn",rewardDescription:"Beskrivelse (valgfrit)",
+      rewardPointsCost:"Pris i point",rewardStarsCost:"Pris i stjerner",
+      rewardCostHint:"Sæt mindst én pris til mere end 0.",
+      createReward:"Opret belønning",rewardList:"Aktive belønninger",
+      rewardRequests:"Børnenes ønsker",rewardSuccess:"Belønningen er oprettet!",
+      rewardError:"Kunne ikke oprette belønningen:",rewardEmpty:"Der er endnu ikke oprettet belønninger.",
+      rewardDeactivate:"Deaktivér",rewardDeactivated:"Belønningen er deaktiveret.",
+      rewardDeactivateError:"Kunne ikke deaktivere belønningen:",
+      rewardRequestEmpty:"Der er ingen ønsker, der afventer godkendelse.",
+      rewardRequestError:"Kunne ikke hente børnenes ønsker:",
+      rewardApprove:"Godkend",rewardReject:"Afvis",rewardApproved:"Godkendt",
+      rewardRejected:"Afvist",rewardReviewError:"Kunne ikke behandle ønsket:",
+      rewardReviewSuccess:"Ønsket er behandlet.",rewardPending:"Afventer",
+      rewardChild:"Barn",rewardCost:"Pris",
+      invitationTitle:"Invitér en forælder",
+      invitationSubtitle:"Invitér en anden forælder til familien. Du skal selv sende invitationslinket.",
+      invitationEmail:"Forælderens e-mail",invitationRole:"Rolle",
+      invitationParent:"Forælder",invitationAdmin:"Administrator",
+      createInvitation:"Opret invitation",pendingInvitations:"Ventende invitationer",
+      invitationLoading:"Henter invitationer...",
+      invitationEmpty:"Der er ingen ventende invitationer.",
+      invitationCreated:"Invitationen er oprettet. Kopiér linket, og send det til personen.",
+      invitationCreateError:"Kunne ikke oprette invitation:",
+      invitationLoadError:"Kunne ikke hente invitationer:",
+      copyLink:"Kopiér link",linkCopied:"Linket er kopieret.",
+      inviteNotice:"Du er inviteret til en familie. Log ind eller opret en konto med den e-mailadresse, invitationen blev sendt til.",
+      invitationAccepting:"Accepterer invitation...",
+      invitationAccepted:"Invitationen er accepteret. Du er nu medlem af familien.",
+      invitationAcceptError:"Kunne ikke acceptere invitationen:",
+      invitationExpires:"Udløber"
     },
     en: {
       heroTitle:"Small tasks. Big achievements.",
       heroText:"Make everyday chores fun and help children become more independent.",
       loginTitle:"Welcome back!",loginSubtitle:"Log in to your family account.",
-      signupTitle:"Create your account",
-      signupSubtitle:"Get started and create a happier everyday life.",
+      signupTitle:"Create your account",signupSubtitle:"Get started and create a happier everyday life.",
       name:"Your name",email:"Email",password:"Password",
       login:"Log in",signup:"Create account",
       noAccount:"Don't have an account?",hasAccount:"Already have an account?",
@@ -452,40 +488,34 @@ header{margin-bottom:30px}
       authError:"An error occurred. Check your email and password.",
       confirmEmail:"Account created. Confirm your email using the link before logging in.",
       role:"Your role",owner:"Owner",chooseFamily:"Select family",selected:"Selected family",
-      childTitle:"Create a child",
-      childSubtitle:"Choose a family and create the child's profile.",
-      childName:"Child's name",childAvatar:"Choose avatar",
-      birthYear:"Birth year (optional)",childPin:"Child's 4-digit PIN",
-      createChild:"Create child",childSuccess:"Child profile created!",
-      childError:"Could not create the child profile.",children:"Children",
-      noChildren:"No children have been added to this family yet.",
+      childTitle:"Create a child",childSubtitle:"Choose a family and create the child's profile.",
+      childName:"Child's name",childAvatar:"Choose avatar",birthYear:"Birth year (optional)",
+      childPin:"Child's 4-digit PIN",createChild:"Create child",
+      childSuccess:"Child profile created!",childError:"Could not create the child profile.",
+      children:"Children",noChildren:"No children have been added to this family yet.",
       childLoading:"Creating child...",noFamilySelected:"Select a family above first.",
       childPinError:"The PIN must contain exactly 4 digits.",
-      yearError:"Enter a valid birth year.",
-      loadError:"Could not load family information.",
+      yearError:"Enter a valid birth year.",loadError:"Could not load family information.",
       taskManagementTitle:"Task management",
       taskManagementSubtitle:"Create tasks, award points, and choose who should complete them.",
       taskTitle:"Task name",taskDescription:"Description (optional)",
       taskPoints:"Points",taskStars:"Stars",taskRecurrence:"Repeat",
       taskSelection:"Who chooses the task?",taskChildren:"Assign to children",
       taskChildrenHint:"Select at least one child for assigned tasks.",
-      taskCategory:"Category (optional)",
-      taskApproval:"Requires approval from a parent",
+      taskCategory:"Category (optional)",taskApproval:"Requires approval from a parent",
       createTask:"Create task",taskList:"Active tasks",
       noTasks:"No tasks have been created yet.",
       noChildrenForTasks:"Create a child first before assigning tasks.",
       chooseChild:"Select at least one child for this task.",
       taskSuccess:"Task created!",taskError:"Could not create the task.",
       taskLoading:"Creating task...",taskDeactivate:"Deactivate",
-      taskDeactivated:"Task deactivated.",
-      taskDeactivateError:"Could not deactivate the task.",
+      taskDeactivated:"Task deactivated.",taskDeactivateError:"Could not deactivate the task.",
       assigned:"Assigned",selfSelect:"Child chooses",both:"Both",
       daily:"Daily",weekly:"Weekly",once:"No repeat",
       approvalYes:"Parent approval required",approvalNo:"No approval required",
       approvalTitle:"Approve tasks",
       approvalSubtitle:"Review tasks children have marked as completed.",
-      approvalHistoryTitle:"Recent decisions",
-      approvalLoading:"Loading tasks...",
+      approvalHistoryTitle:"Recent decisions",approvalLoading:"Loading tasks...",
       approvalEmpty:"No tasks are awaiting approval.",
       approvalHistoryEmpty:"There are no reviewed tasks yet.",
       approvalError:"Could not load tasks for approval:",
@@ -494,14 +524,38 @@ header{margin-bottom:30px}
       approvalSuccess:"The task has been reviewed.",
       approvalActionError:"Could not review the task:",
       approvalChild:"Child",approvalReward:"Reward",
-      rewardManagementTitle:"Reward management",rewardManagementSubtitle:"Create rewards that children can save points and stars for.",
-      rewardTitle:"Reward name",rewardDescription:"Description (optional)",rewardPointsCost:"Cost in points",rewardStarsCost:"Cost in stars",
-      rewardCostHint:"Set at least one cost above 0.",createReward:"Create reward",rewardList:"Active rewards",rewardRequests:"Children's requests",
-      rewardSuccess:"Reward created!",rewardError:"Could not create reward:",rewardEmpty:"No rewards have been created yet.",
-      rewardDeactivate:"Deactivate",rewardDeactivated:"Reward deactivated.",rewardDeactivateError:"Could not deactivate reward:",
-      rewardRequestEmpty:"There are no reward requests awaiting approval.",rewardRequestError:"Could not load children's requests:",
-      rewardApprove:"Approve",rewardReject:"Reject",rewardApproved:"Approved",rewardRejected:"Rejected",rewardReviewError:"Could not review request:",rewardReviewSuccess:"The request has been reviewed.",
-      rewardPending:"Pending",rewardChild:"Child",rewardCost:"Cost"
+      rewardManagementTitle:"Reward management",
+      rewardManagementSubtitle:"Create rewards that children can save points and stars for.",
+      rewardTitle:"Reward name",rewardDescription:"Description (optional)",
+      rewardPointsCost:"Cost in points",rewardStarsCost:"Cost in stars",
+      rewardCostHint:"Set at least one cost above 0.",
+      createReward:"Create reward",rewardList:"Active rewards",
+      rewardRequests:"Children's requests",rewardSuccess:"Reward created!",
+      rewardError:"Could not create reward:",rewardEmpty:"No rewards have been created yet.",
+      rewardDeactivate:"Deactivate",rewardDeactivated:"Reward deactivated.",
+      rewardDeactivateError:"Could not deactivate reward:",
+      rewardRequestEmpty:"There are no reward requests awaiting approval.",
+      rewardRequestError:"Could not load children's requests:",
+      rewardApprove:"Approve",rewardReject:"Reject",rewardApproved:"Approved",
+      rewardRejected:"Rejected",rewardReviewError:"Could not review request:",
+      rewardReviewSuccess:"The request has been reviewed.",rewardPending:"Pending",
+      rewardChild:"Child",rewardCost:"Cost",
+      invitationTitle:"Invite a parent",
+      invitationSubtitle:"Invite another parent to your family. You must send the invitation link yourself.",
+      invitationEmail:"Parent's email",invitationRole:"Role",
+      invitationParent:"Parent",invitationAdmin:"Administrator",
+      createInvitation:"Create invitation",pendingInvitations:"Pending invitations",
+      invitationLoading:"Loading invitations...",
+      invitationEmpty:"There are no pending invitations.",
+      invitationCreated:"Invitation created. Copy the link and send it to the person.",
+      invitationCreateError:"Could not create invitation:",
+      invitationLoadError:"Could not load invitations:",
+      copyLink:"Copy link",linkCopied:"The link has been copied.",
+      inviteNotice:"You have been invited to a family. Log in or create an account using the email address the invitation was sent to.",
+      invitationAccepting:"Accepting invitation...",
+      invitationAccepted:"Invitation accepted. You are now a member of the family.",
+      invitationAcceptError:"Could not accept invitation:",
+      invitationExpires:"Expires"
     }
   };
 
@@ -552,10 +606,16 @@ header{margin-bottom:30px}
       taskListTitle:"taskList",approvalTitle:"approvalTitle",
       approvalSubtitle:"approvalSubtitle",
       approvalHistoryTitle:"approvalHistoryTitle",
-      rewardManagementTitle:"rewardManagementTitle",rewardManagementSubtitle:"rewardManagementSubtitle",
+      rewardManagementTitle:"rewardManagementTitle",
+      rewardManagementSubtitle:"rewardManagementSubtitle",
       rewardTitleLabel:"rewardTitle",rewardDescriptionLabel:"rewardDescription",
       rewardPointsCostLabel:"rewardPointsCost",rewardStarsCostLabel:"rewardStarsCost",
-      rewardListTitle:"rewardList",rewardRequestsTitle:"rewardRequests"
+      rewardListTitle:"rewardList",rewardRequestsTitle:"rewardRequests",
+      invitationTitle:"invitationTitle",
+      invitationSubtitle:"invitationSubtitle",
+      invitationEmailLabel:"invitationEmail",
+      invitationRoleLabel:"invitationRole",
+      pendingInvitationsTitle:"pendingInvitations"
     };
 
     Object.entries(ids).forEach(([id,key])=>$(id).textContent=t(key));
@@ -566,6 +626,8 @@ header{margin-bottom:30px}
     $("taskSelectionType").options[0].textContent=t("selfSelect");
     $("taskSelectionType").options[1].textContent=t("assigned");
     $("taskSelectionType").options[2].textContent=t("both");
+    $("invitationRole").options[0].textContent=t("invitationParent");
+    $("invitationRole").options[1].textContent=t("invitationAdmin");
 
     $("formTitle").textContent=t(isSignup?"signupTitle":"loginTitle");
     $("formSubtitle").textContent=t(isSignup?"signupSubtitle":"loginSubtitle");
@@ -579,6 +641,12 @@ header{margin-bottom:30px}
     $("createTaskButton").textContent=t("createTask");
     $("createRewardButton").textContent=t("createReward");
     $("rewardCostHint").textContent=t("rewardCostHint");
+    $("createInvitationButton").textContent=t("createInvitation");
+
+    if(invitationToken){
+      $("inviteAuthNotice").textContent=t("inviteNotice");
+      $("inviteAuthNotice").classList.remove("hidden");
+    }
 
     if(selectedFamilyName){
       $("selectedFamilyText").textContent=t("selected")+": "+selectedFamilyName;
@@ -590,6 +658,12 @@ header{margin-bottom:30px}
     $("dashboard").classList.add("hidden");
     $("hero").classList.remove("hidden");
     $("logoutButton").classList.add("hidden");
+    if(invitationToken){
+      $("inviteAuthNotice").textContent=t("inviteNotice");
+      $("inviteAuthNotice").classList.remove("hidden");
+    }else{
+      $("inviteAuthNotice").classList.add("hidden");
+    }
   }
 
   async function showDashboard(user){
@@ -604,11 +678,34 @@ header{margin-bottom:30px}
     await loadFamilies();
   }
 
+  async function acceptInvitationIfPresent(user){
+    if(!invitationToken||!user||invitationAcceptStarted)return;
+    invitationAcceptStarted=true;
+    try{
+      setMessage("authMessage",t("invitationAccepting"),"success");
+      const {data,error}=await db.rpc("accept_family_invitation",{
+        p_token:invitationToken
+      });
+      if(error)throw error;
+      if(!data||data.success!==true){
+        throw new Error(data?.message||t("invitationAcceptError"));
+      }
+      window.history.replaceState({},document.title,window.location.pathname);
+      await showDashboard(user);
+      setMessage("familyMessage",t("invitationAccepted"),"success");
+    }catch(error){
+      invitationAcceptStarted=false;
+      showAuth();
+      setMessage("authMessage",t("invitationAcceptError")+" "+(error.message||""));
+    }
+  }
+
   async function loadFamilies(){
     clearMessage("familyMessage");
     clearMessage("childMessage");
     $("familyListSection").classList.add("hidden");
     $("createFamilyCard").classList.remove("hidden");
+    $("invitationPanel").classList.add("hidden");
 
     const {data:memberships,error:memberError}=await db
       .from("family_members")
@@ -662,6 +759,12 @@ header{margin-bottom:30px}
     }
 
     renderFamilies(memberships,childrenCache);
+
+    const selectedMembership=memberships.find(m=>m.family_id===selectedFamilyId);
+    const canInvite=["owner","admin"].includes(selectedMembership?.role);
+    $("invitationPanel").classList.toggle("hidden",!canInvite);
+    if(canInvite)await loadFamilyInvitations();
+
     $("selectedFamilyText").textContent=selectedFamilyName?
       t("selected")+": "+selectedFamilyName:t("noFamilySelected");
 
@@ -672,9 +775,156 @@ header{margin-bottom:30px}
     await loadRewardRequests();
   }
 
+  async function loadFamilyInvitations(){
+    const list=$("invitationList");
+    list.innerHTML="";
+    list.appendChild(makeTextElement("div",t("invitationLoading"),"task-empty"));
+
+    const {data,error}=await db.from("family_invitations")
+      .select("id,email,role,token,status,expires_at,created_at")
+      .eq("family_id",selectedFamilyId)
+      .eq("status","pending")
+      .order("created_at",{ascending:false});
+
+    list.innerHTML="";
+    if(error){
+      list.appendChild(makeTextElement("div",t("invitationLoadError")+" "+error.message,"task-empty"));
+      return;
+    }
+
+    if(!data?.length){
+      list.appendChild(makeTextElement("div",t("invitationEmpty"),"task-empty"));
+      return;
+    }
+
+    data.forEach(invitation=>{
+      const item=document.createElement("div");
+      item.className="invitation-item";
+      item.appendChild(makeTextElement("strong",invitation.email));
+      item.appendChild(makeTextElement("div",
+        invitation.role==="admin"?t("invitationAdmin"):t("invitationParent"),
+        "invitation-role"));
+
+      const expiry=invitation.expires_at?
+        new Date(invitation.expires_at).toLocaleDateString(currentLanguage==="da"?"da-DK":"en-GB"):"";
+      item.appendChild(makeTextElement("div",t("invitationExpires")+": "+expiry,"task-meta"));
+
+      const link=window.location.origin+window.location.pathname+
+        "?invite="+encodeURIComponent(invitation.token);
+
+      const linkWrap=document.createElement("div");
+      linkWrap.className="invitation-link";
+      const linkInput=document.createElement("input");
+      linkInput.type="text";
+      linkInput.readOnly=true;
+      linkInput.value=link;
+      linkInput.setAttribute("aria-label","Invitation link");
+
+      const copyButton=document.createElement("button");
+      copyButton.type="button";
+      copyButton.className="secondary";
+      copyButton.textContent=t("copyLink");
+      copyButton.addEventListener("click",()=>copyInvitationLink(link,copyButton));
+
+      linkWrap.append(linkInput,copyButton);
+      item.appendChild(linkWrap);
+      list.appendChild(item);
+    });
+  }
+
+  async function copyInvitationLink(link,button){
+    try{
+      if(navigator.clipboard&&window.isSecureContext){
+        await navigator.clipboard.writeText(link);
+      }else{
+        const temp=document.createElement("textarea");
+        temp.value=link;
+        temp.style.position="fixed";
+        temp.style.opacity="0";
+        document.body.appendChild(temp);
+        temp.focus();
+        temp.select();
+        const copied=document.execCommand("copy");
+        temp.remove();
+        if(!copied)throw new Error("Copy failed");
+      }
+      const old=button.textContent;
+      button.textContent=t("linkCopied");
+      setTimeout(()=>button.textContent=old,1800);
+    }catch(error){
+      setMessage("invitationMessage",link,"success");
+    }
+  }
+
+  $("invitationForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    clearMessage("invitationMessage");
+    $("createdInvitationLink").classList.add("hidden");
+    $("createdInvitationLink").innerHTML="";
+
+    if(!selectedFamilyId){
+      setMessage("invitationMessage",t("noFamilySelected"));
+      return;
+    }
+
+    const email=$("invitationEmail").value.trim().toLowerCase();
+    const role=$("invitationRole").value;
+    if(!email){
+      setMessage("invitationMessage",t("invalid"));
+      return;
+    }
+
+    const button=$("createInvitationButton");
+    button.disabled=true;
+    button.textContent=t("loading");
+
+    try{
+      const {data,error}=await db.rpc("create_family_invitation",{
+        p_family_id:selectedFamilyId,
+        p_email:email,
+        p_role:role
+      });
+      if(error)throw error;
+      if(!data||data.success!==true){
+        throw new Error(data?.message||t("invitationCreateError"));
+      }
+
+      const link=window.location.origin+window.location.pathname+
+        "?invite="+encodeURIComponent(data.token);
+
+      const linkContainer=$("createdInvitationLink");
+      linkContainer.classList.remove("hidden");
+      linkContainer.appendChild(makeTextElement("p",t("invitationCreated"),"task-hint"));
+
+      const linkWrap=document.createElement("div");
+      linkWrap.className="invitation-link";
+      const linkInput=document.createElement("input");
+      linkInput.type="text";
+      linkInput.readOnly=true;
+      linkInput.value=link;
+
+      const copyButton=document.createElement("button");
+      copyButton.type="button";
+      copyButton.className="secondary";
+      copyButton.textContent=t("copyLink");
+      copyButton.addEventListener("click",()=>copyInvitationLink(link,copyButton));
+
+      linkWrap.append(linkInput,copyButton);
+      linkContainer.appendChild(linkWrap);
+
+      $("invitationEmail").value="";
+      setMessage("invitationMessage",t("invitationCreated"),"success");
+      await loadFamilyInvitations();
+    }catch(error){
+      setMessage("invitationMessage",t("invitationCreateError")+" "+(error.message||""));
+    }finally{
+      button.disabled=false;
+      button.textContent=t("createInvitation");
+    }
+  });
+
   function renderFamilies(memberships,children){
     $("familyList").innerHTML="";
-
     familiesCache.forEach(family=>{
       const membership=memberships.find(m=>m.family_id===family.id);
       const card=document.createElement("div");
@@ -686,18 +936,13 @@ header{margin-bottom:30px}
       titleArea.appendChild(makeTextElement("h3","🏡 "+family.name));
 
       const role=membership?.role==="owner"?t("owner"):(membership?.role||"");
-      titleArea.appendChild(makeTextElement(
-        "p",
-        family.currency+" · "+family.timezone+" · "+t("role")+": "+role,
-        "muted"
-      ));
+      titleArea.appendChild(makeTextElement("p",
+        family.currency+" · "+family.timezone+" · "+t("role")+": "+role,"muted"));
 
       const selectButton=document.createElement("button");
       selectButton.type="button";
       selectButton.className="secondary";
-      selectButton.textContent=selectedFamilyId===family.id?
-        "✓ "+t("selected"):t("chooseFamily");
-
+      selectButton.textContent=selectedFamilyId===family.id?"✓ "+t("selected"):t("chooseFamily");
       selectButton.addEventListener("click",async()=>{
         selectedFamilyId=family.id;
         selectedFamilyName=family.name;
@@ -710,22 +955,18 @@ header{margin-bottom:30px}
       card.appendChild(makeTextElement("h4",t("children")));
 
       const familyChildren=children.filter(c=>c.family_id===family.id);
-
       if(!familyChildren.length){
         card.appendChild(makeTextElement("p",t("noChildren"),"empty-children"));
       }else{
         const childrenList=document.createElement("div");
         childrenList.className="children-list";
-
         familyChildren.forEach(child=>{
           const childCard=document.createElement("div");
           childCard.className="child-card";
           const avatar=makeTextElement("div",child.avatar_url||"🙂","avatar");
           const details=document.createElement("div");
           details.appendChild(makeTextElement("strong",child.name));
-          if(child.birth_year){
-            details.appendChild(makeTextElement("small",String(child.birth_year)));
-          }
+          if(child.birth_year)details.appendChild(makeTextElement("small",String(child.birth_year)));
           childCard.append(avatar,details);
           childrenList.appendChild(childCard);
         });
@@ -769,15 +1010,12 @@ header{margin-bottom:30px}
       list.appendChild(makeTextElement("div",t("noFamilySelected"),"task-empty"));
       return;
     }
-
     list.innerHTML="";
     list.appendChild(makeTextElement("div",t("loading"),"task-empty"));
 
-    const {data:tasks,error}=await db
-      .from("tasks")
+    const {data:tasks,error}=await db.from("tasks")
       .select("id, title, description, category, selection_type, recurrence, points, stars, requires_approval, is_active")
-      .eq("family_id",selectedFamilyId)
-      .eq("is_active",true)
+      .eq("family_id",selectedFamilyId).eq("is_active",true)
       .order("created_at",{ascending:false});
 
     if(error){
@@ -785,7 +1023,6 @@ header{margin-bottom:30px}
       list.appendChild(makeTextElement("div",t("taskError")+" "+error.message,"task-empty"));
       return;
     }
-
     list.innerHTML="";
     if(!tasks||!tasks.length){
       list.appendChild(makeTextElement("div",t("noTasks"),"task-empty"));
@@ -797,10 +1034,7 @@ header{margin-bottom:30px}
       item.className="task-item";
       const info=document.createElement("div");
       info.appendChild(makeTextElement("h4",task.title));
-      if(task.description){
-        info.appendChild(makeTextElement("div",task.description,"task-meta"));
-      }
-
+      if(task.description)info.appendChild(makeTextElement("div",task.description,"task-meta"));
       const mode=task.selection_type==="assigned"?t("assigned"):
         task.selection_type==="both"?t("both"):t("selfSelect");
       const repeat=task.recurrence==="daily"?t("daily"):
@@ -809,7 +1043,6 @@ header{margin-bottom:30px}
       const meta=["⭐ "+task.stars,"✦ "+task.points+" "+t("taskPoints").toLowerCase(),mode,repeat,approval];
       if(task.category)meta.push(task.category);
       info.appendChild(makeTextElement("div",meta.join(" · "),"task-meta"));
-
       const deactivate=document.createElement("button");
       deactivate.type="button";
       deactivate.className="secondary";
@@ -821,21 +1054,15 @@ header{margin-bottom:30px}
   }
 
   async function deactivateTask(taskId,button){
-    if(!confirm(currentLanguage==="da"?
-      "Vil du deaktivere denne opgave?":"Deactivate this task?"))return;
-
+    if(!confirm(currentLanguage==="da"?"Vil du deaktivere denne opgave?":"Deactivate this task?"))return;
     button.disabled=true;
-    const {error}=await db.from("tasks")
-      .update({is_active:false})
-      .eq("id",taskId)
-      .eq("family_id",selectedFamilyId);
-
+    const {error}=await db.from("tasks").update({is_active:false})
+      .eq("id",taskId).eq("family_id",selectedFamilyId);
     if(error){
       setMessage("taskMessage",t("taskDeactivateError")+" "+error.message);
       button.disabled=false;
       return;
     }
-
     setMessage("taskMessage",t("taskDeactivated"),"success");
     await loadTasks();
   }
@@ -860,12 +1087,10 @@ header{margin-bottom:30px}
     pendingList.appendChild(makeTextElement("div",t("approvalLoading"),"task-empty"));
     historyList.appendChild(makeTextElement("div",t("loading"),"task-empty"));
 
-    const {data:completions,error}=await db
-      .from("task_completions")
+    const {data:completions,error}=await db.from("task_completions")
       .select("id, task_id, child_id, status, completed_at, completed_date, points_awarded, stars_awarded")
       .eq("family_id",selectedFamilyId)
-      .order("completed_at",{ascending:false})
-      .limit(100);
+      .order("completed_at",{ascending:false}).limit(100);
 
     if(error){
       pendingList.innerHTML="";
@@ -883,12 +1108,11 @@ header{margin-bottom:30px}
 
     const taskIds=[...new Set(rows.map(row=>row.task_id).filter(Boolean))];
     const childIds=[...new Set(rows.map(row=>row.child_id).filter(Boolean))];
-    let taskMap=new Map();
-    let childMap=new Map();
+    let taskMap=new Map(),childMap=new Map();
 
     if(taskIds.length){
-      const {data:tasks,error:tasksError}=await db
-        .from("tasks").select("id,title").in("id",taskIds);
+      const {data:tasks,error:tasksError}=await db.from("tasks")
+        .select("id,title").in("id",taskIds);
       if(tasksError){
         pendingList.innerHTML="";
         historyList.innerHTML="";
@@ -900,8 +1124,8 @@ header{margin-bottom:30px}
     }
 
     if(childIds.length){
-      const {data:children,error:childrenError}=await db
-        .from("children").select("id,name,avatar_url").in("id",childIds);
+      const {data:children,error:childrenError}=await db.from("children")
+        .select("id,name,avatar_url").in("id",childIds);
       if(childrenError){
         pendingList.innerHTML="";
         historyList.innerHTML="";
@@ -917,37 +1141,25 @@ header{margin-bottom:30px}
       pendingList.appendChild(makeTextElement("div",t("approvalEmpty"),"task-empty"));
     }else{
       pending.forEach(row=>{
-        const task=taskMap.get(row.task_id);
-        const child=childMap.get(row.child_id);
+        const task=taskMap.get(row.task_id),child=childMap.get(row.child_id);
         const item=document.createElement("div");
         item.className="approval-item";
         const info=document.createElement("div");
-        info.appendChild(makeTextElement("h4",task?.title||
-          (currentLanguage==="da"?"Ukendt opgave":"Unknown task")));
-
+        info.appendChild(makeTextElement("h4",task?.title||(currentLanguage==="da"?"Ukendt opgave":"Unknown task")));
         const childName=child?(child.avatar_url||"🙂")+" "+child.name:t("approvalChild");
-        const date=row.completed_at?
-          new Date(row.completed_at).toLocaleString(currentLanguage==="da"?"da-DK":"en-GB"):"";
+        const date=row.completed_at?new Date(row.completed_at).toLocaleString(currentLanguage==="da"?"da-DK":"en-GB"):"";
         const reward="⭐ "+(row.stars_awarded||0)+" · ✦ "+(row.points_awarded||0);
-
         info.appendChild(makeTextElement("div",childName+" · "+date,"task-meta"));
         info.appendChild(makeTextElement("div",t("approvalReward")+": "+reward,"task-meta"));
 
         const actions=document.createElement("div");
         actions.className="approval-actions";
-
         const approve=document.createElement("button");
-        approve.type="button";
-        approve.className="approve-button";
-        approve.textContent=t("approvalApprove");
-        approve.addEventListener("click",()=>reviewCompletion(row.id,true,approve,reject));
-
+        approve.type="button";approve.className="approve-button";approve.textContent=t("approvalApprove");
         const reject=document.createElement("button");
-        reject.type="button";
-        reject.className="reject-button";
-        reject.textContent=t("approvalReject");
+        reject.type="button";reject.className="reject-button";reject.textContent=t("approvalReject");
+        approve.addEventListener("click",()=>reviewCompletion(row.id,true,approve,reject));
         reject.addEventListener("click",()=>reviewCompletion(row.id,false,approve,reject));
-
         actions.append(approve,reject);
         item.append(info,actions);
         pendingList.appendChild(item);
@@ -959,32 +1171,19 @@ header{margin-bottom:30px}
       historyList.appendChild(makeTextElement("div",t("approvalHistoryEmpty"),"task-empty"));
     }else{
       history.slice(0,30).forEach(row=>{
-        const task=taskMap.get(row.task_id);
-        const child=childMap.get(row.child_id);
+        const task=taskMap.get(row.task_id),child=childMap.get(row.child_id);
         const item=document.createElement("div");
         item.className="approval-item";
         const info=document.createElement("div");
-        info.appendChild(makeTextElement("h4",task?.title||
-          (currentLanguage==="da"?"Ukendt opgave":"Unknown task")));
-
+        info.appendChild(makeTextElement("h4",task?.title||(currentLanguage==="da"?"Ukendt opgave":"Unknown task")));
         const childName=child?(child.avatar_url||"🙂")+" "+child.name:t("approvalChild");
-        const date=row.completed_at?
-          new Date(row.completed_at).toLocaleString(currentLanguage==="da"?"da-DK":"en-GB"):"";
+        const date=row.completed_at?new Date(row.completed_at).toLocaleString(currentLanguage==="da"?"da-DK":"en-GB"):"";
         info.appendChild(makeTextElement("div",childName+" · "+date,"task-meta"));
-
-        const status=makeTextElement(
-          "span",
+        info.appendChild(makeTextElement("span",
           row.status==="approved"?t("approvalApproved"):t("approvalRejected"),
-          "history-status "+row.status
-        );
-        info.appendChild(status);
-
+          "history-status "+row.status));
         if(row.status==="approved"){
-          info.appendChild(makeTextElement(
-            "div",
-            "⭐ "+(row.stars_awarded||0)+" · ✦ "+(row.points_awarded||0),
-            "task-meta"
-          ));
+          info.appendChild(makeTextElement("div","⭐ "+(row.stars_awarded||0)+" · ✦ "+(row.points_awarded||0),"task-meta"));
         }
         item.appendChild(info);
         historyList.appendChild(item);
@@ -993,33 +1192,23 @@ header{margin-bottom:30px}
   }
 
   async function reviewCompletion(completionId,approve,approveButton,rejectButton){
-    approveButton.disabled=true;
-    rejectButton.disabled=true;
-    clearMessage("approvalMessage");
-
+    approveButton.disabled=true;rejectButton.disabled=true;clearMessage("approvalMessage");
     try{
       const {data,error}=await db.rpc("review_task_completion",{
-        p_completion_id:completionId,
-        p_approve:approve
+        p_completion_id:completionId,p_approve:approve
       });
-
       if(error)throw error;
-      if(!data||data.success!==true){
-        throw new Error(data?.message||t("approvalActionError"));
-      }
-
+      if(!data||data.success!==true)throw new Error(data?.message||t("approvalActionError"));
       setMessage("approvalMessage",data.message||t("approvalSuccess"),"success");
       await loadApprovals();
     }catch(error){
       setMessage("approvalMessage",t("approvalActionError")+" "+(error.message||""));
-      approveButton.disabled=false;
-      rejectButton.disabled=false;
+      approveButton.disabled=false;rejectButton.disabled=false;
     }
   }
 
   async function loadRewards(){
-    const list=$("rewardList");
-    list.innerHTML="";
+    const list=$("rewardList");list.innerHTML="";
     if(!selectedFamilyId){list.appendChild(makeTextElement("div",t("noFamilySelected"),"task-empty"));return;}
     const {data:rewards,error}=await db.from("rewards")
       .select("id,title,description,points_cost,stars_cost,is_active")
@@ -1033,7 +1222,8 @@ header{margin-bottom:30px}
       info.appendChild(makeTextElement("h4",reward.title));
       if(reward.description)info.appendChild(makeTextElement("div",reward.description,"task-meta"));
       info.appendChild(makeTextElement("div","✦ "+reward.points_cost+" · ⭐ "+reward.stars_cost,"reward-cost"));
-      const button=document.createElement("button");button.type="button";button.className="secondary";button.textContent=t("rewardDeactivate");
+      const button=document.createElement("button");
+      button.type="button";button.className="secondary";button.textContent=t("rewardDeactivate");
       button.addEventListener("click",()=>deactivateReward(reward.id,button));
       item.append(info,button);list.appendChild(item);
     });
@@ -1044,8 +1234,12 @@ header{margin-bottom:30px}
     button.disabled=true;
     const {error}=await db.from("rewards").update({is_active:false})
       .eq("id",rewardId).eq("family_id",selectedFamilyId);
-    if(error){setMessage("rewardMessage",t("rewardDeactivateError")+" "+error.message);button.disabled=false;return;}
-    setMessage("rewardMessage",t("rewardDeactivated"),"success");await loadRewards();
+    if(error){
+      setMessage("rewardMessage",t("rewardDeactivateError")+" "+error.message);
+      button.disabled=false;return;
+    }
+    setMessage("rewardMessage",t("rewardDeactivated"),"success");
+    await loadRewards();
   }
 
   async function loadRewardRequests(){
@@ -1063,7 +1257,10 @@ header{margin-bottom:30px}
       db.from("rewards").select("id,title").in("id",rewardIds),
       db.from("children").select("id,name,avatar_url").in("id",childIds)
     ]);
-    if(rewardError||childError){list.appendChild(makeTextElement("div",t("rewardRequestError")+" "+(rewardError||childError).message,"task-empty"));return;}
+    if(rewardError||childError){
+      list.appendChild(makeTextElement("div",t("rewardRequestError")+" "+(rewardError||childError).message,"task-empty"));
+      return;
+    }
     const rewardMap=new Map((rewards||[]).map(x=>[x.id,x]));
     const childMap=new Map((children||[]).map(x=>[x.id,x]));
     pending.forEach(row=>{
@@ -1126,93 +1323,53 @@ header{margin-bottom:30px}
   $("taskSelectionType").addEventListener("change",renderTaskChildChoices);
 
   $("taskForm").addEventListener("submit",async e=>{
-    e.preventDefault();
-    clearMessage("taskMessage");
-
-    if(!selectedFamilyId){
-      setMessage("taskMessage",t("noFamilySelected"));
-      return;
-    }
-
+    e.preventDefault();clearMessage("taskMessage");
+    if(!selectedFamilyId){setMessage("taskMessage",t("noFamilySelected"));return;}
     const selectionType=$("taskSelectionType").value;
-    const selectedChildren=Array.from(
-      document.querySelectorAll(".task-child-checkbox:checked")
-    ).map(input=>input.value);
-
+    const selectedChildren=Array.from(document.querySelectorAll(".task-child-checkbox:checked")).map(input=>input.value);
     if(selectionType!=="self_select"&&selectedChildren.length===0){
-      setMessage("taskMessage",t("chooseChild"));
-      return;
+      setMessage("taskMessage",t("chooseChild"));return;
     }
-
     const title=$("taskTitle").value.trim();
     const points=Number($("taskPoints").value);
     const stars=Number($("taskStars").value);
-
-    if(!title||!Number.isInteger(points)||points<0||
-       !Number.isInteger(stars)||stars<0){
-      setMessage("taskMessage",t("invalid"));
-      return;
+    if(!title||!Number.isInteger(points)||points<0||!Number.isInteger(stars)||stars<0){
+      setMessage("taskMessage",t("invalid"));return;
     }
 
-    const button=$("createTaskButton");
-    button.disabled=true;
-    button.textContent=t("taskLoading");
-
+    const button=$("createTaskButton");button.disabled=true;button.textContent=t("taskLoading");
     let createdTaskId=null;
-
     try{
       const taskData={
-        family_id:selectedFamilyId,
-        title,
+        family_id:selectedFamilyId,title,
         description:$("taskDescription").value.trim()||null,
         category:$("taskCategory").value.trim()||null,
-        selection_type:selectionType,
-        recurrence:$("taskRecurrence").value,
-        points,
-        stars,
-        requires_approval:$("taskRequiresApproval").checked,
-        created_by:currentUser.id,
-        is_active:true
+        selection_type:selectionType,recurrence:$("taskRecurrence").value,
+        points,stars,requires_approval:$("taskRequiresApproval").checked,
+        created_by:currentUser.id,is_active:true
       };
-
-      const {data:task,error:taskError}=await db
-        .from("tasks").insert(taskData).select("id").single();
-
+      const {data:task,error:taskError}=await db.from("tasks").insert(taskData).select("id").single();
       if(taskError)throw taskError;
       createdTaskId=task.id;
 
       if(selectionType!=="self_select"){
         const assignments=selectedChildren.map(childId=>({
-          family_id:selectedFamilyId,
-          task_id:createdTaskId,
-          child_id:childId
+          family_id:selectedFamilyId,task_id:createdTaskId,child_id:childId
         }));
-
-        const {error:assignmentError}=await db
-          .from("task_assignments").insert(assignments);
-
+        const {error:assignmentError}=await db.from("task_assignments").insert(assignments);
         if(assignmentError){
-          await db.from("tasks").delete()
-            .eq("id",createdTaskId)
-            .eq("family_id",selectedFamilyId);
+          await db.from("tasks").delete().eq("id",createdTaskId).eq("family_id",selectedFamilyId);
           throw assignmentError;
         }
       }
-
-      $("taskForm").reset();
-      $("taskPoints").value=10;
-      $("taskStars").value=1;
-      $("taskRequiresApproval").checked=true;
-      $("taskSelectionType").value="self_select";
+      $("taskForm").reset();$("taskPoints").value=10;$("taskStars").value=1;
+      $("taskRequiresApproval").checked=true;$("taskSelectionType").value="self_select";
       renderTaskChildChoices();
-
-      setMessage("taskMessage",t("taskSuccess"),"success");
-      await loadTasks();
+      setMessage("taskMessage",t("taskSuccess"),"success");await loadTasks();
     }catch(error){
       setMessage("taskMessage",t("taskError")+" "+(error.message||""));
     }finally{
-      button.disabled=false;
-      button.textContent=t("createTask");
+      button.disabled=false;button.textContent=t("createTask");
     }
   });
 
@@ -1224,47 +1381,40 @@ header{margin-bottom:30px}
   });
 
   $("switchButton").addEventListener("click",()=>{
-    isSignup=!isSignup;
-    clearMessage("authMessage");
-    updateLanguage();
+    isSignup=!isSignup;clearMessage("authMessage");updateLanguage();
   });
 
   $("authForm").addEventListener("submit",async e=>{
-    e.preventDefault();
-    clearMessage("authMessage");
-
+    e.preventDefault();clearMessage("authMessage");
     const email=$("email").value.trim();
     const password=$("password").value;
     const name=$("displayName").value.trim();
-
-    $("authButton").disabled=true;
-    $("authButton").textContent=t("loading");
+    $("authButton").disabled=true;$("authButton").textContent=t("loading");
 
     try{
       if(isSignup){
         if(!name)throw new Error(t("invalid"));
-
+        const redirectUrl=window.location.origin+window.location.pathname+
+          (invitationToken?"?invite="+encodeURIComponent(invitationToken):"");
         const {data,error}=await db.auth.signUp({
-          email,
-          password,
-          options:{
-            data:{display_name:name},
-            emailRedirectTo:window.location.href.split("?")[0]
-          }
+          email,password,
+          options:{data:{display_name:name},emailRedirectTo:redirectUrl}
         });
-
         if(error)throw error;
-
         if(data.session){
-          setMessage("authMessage",t("signupSuccess"),"success");
-          await showDashboard(data.user);
+          if(invitationToken)await acceptInvitationIfPresent(data.user);
+          else{
+            setMessage("authMessage",t("signupSuccess"),"success");
+            await showDashboard(data.user);
+          }
         }else{
           setMessage("authMessage",t("confirmEmail"),"success");
         }
       }else{
         const {data,error}=await db.auth.signInWithPassword({email,password});
         if(error)throw error;
-        await showDashboard(data.user);
+        if(invitationToken)await acceptInvitationIfPresent(data.user);
+        else await showDashboard(data.user);
       }
     }catch(error){
       setMessage("authMessage",error.message||t("authError"));
@@ -1275,98 +1425,57 @@ header{margin-bottom:30px}
   });
 
   $("familyForm").addEventListener("submit",async e=>{
-    e.preventDefault();
-    clearMessage("familyMessage");
-
+    e.preventDefault();clearMessage("familyMessage");
     const name=$("familyName").value.trim();
     const currency=$("currency").value;
     const timezone=$("timezone").value;
-
-    if(!name){
-      setMessage("familyMessage",t("invalid"));
-      return;
-    }
-
-    $("createFamilyButton").disabled=true;
-    $("createFamilyButton").textContent=t("loading");
-
+    if(!name){setMessage("familyMessage",t("invalid"));return;}
+    $("createFamilyButton").disabled=true;$("createFamilyButton").textContent=t("loading");
     try{
       const {error}=await db.rpc("create_family",{
-        p_name:name,
-        p_currency:currency,
-        p_timezone:timezone,
-        p_language:currentLanguage
+        p_name:name,p_currency:currency,p_timezone:timezone,p_language:currentLanguage
       });
-
       if(error)throw error;
-
-      $("familyName").value="";
-      selectedFamilyId=null;
-      selectedFamilyName="";
+      $("familyName").value="";selectedFamilyId=null;selectedFamilyName="";
       setMessage("familyMessage",t("familySuccess"),"success");
       await loadFamilies();
     }catch(error){
       setMessage("familyMessage",error.message||t("familyError"));
     }finally{
-      $("createFamilyButton").disabled=false;
-      $("createFamilyButton").textContent=t("createButton");
+      $("createFamilyButton").disabled=false;$("createFamilyButton").textContent=t("createButton");
     }
   });
 
   $("childForm").addEventListener("submit",async e=>{
-    e.preventDefault();
-    clearMessage("childMessage");
-
-    if(!selectedFamilyId){
-      setMessage("childMessage",t("noFamilySelected"));
-      return;
-    }
-
+    e.preventDefault();clearMessage("childMessage");
+    if(!selectedFamilyId){setMessage("childMessage",t("noFamilySelected"));return;}
     const name=$("childName").value.trim();
     const avatar=$("childAvatar").value;
     const pin=$("childPin").value.trim();
     const birthYearValue=$("birthYear").value.trim();
-
-    if(!/^[0-9]{4}$/.test(pin)){
-      setMessage("childMessage",t("childPinError"));
-      return;
-    }
-
+    if(!/^[0-9]{4}$/.test(pin)){setMessage("childMessage",t("childPinError"));return;}
     let birthYear=null;
     if(birthYearValue){
       birthYear=Number(birthYearValue);
       if(!Number.isInteger(birthYear)||birthYear<2000||birthYear>2035){
-        setMessage("childMessage",t("yearError"));
-        return;
+        setMessage("childMessage",t("yearError"));return;
       }
     }
-
-    $("createChildButton").disabled=true;
-    $("createChildButton").textContent=t("childLoading");
-
+    $("createChildButton").disabled=true;$("createChildButton").textContent=t("childLoading");
     try{
       const {error}=await db.rpc("create_child_with_pin",{
-        p_family_id:selectedFamilyId,
-        p_name:name,
-        p_pin:pin,
-        p_avatar_url:avatar,
-        p_birth_year:birthYear
+        p_family_id:selectedFamilyId,p_name:name,p_pin:pin,
+        p_avatar_url:avatar,p_birth_year:birthYear
       });
-
       if(error)throw error;
-
-      $("childName").value="";
-      $("childPin").value="";
-      $("birthYear").value="";
+      $("childName").value="";$("childPin").value="";$("birthYear").value="";
       $("childAvatar").value="🦁";
-
       setMessage("childMessage",t("childSuccess"),"success");
       await loadFamilies();
     }catch(error){
       setMessage("childMessage",t("childError")+" "+error.message);
     }finally{
-      $("createChildButton").disabled=false;
-      $("createChildButton").textContent=t("createChild");
+      $("createChildButton").disabled=false;$("createChildButton").textContent=t("createChild");
     }
   });
 
@@ -1378,31 +1487,28 @@ header{margin-bottom:30px}
 
   $("logoutButton").addEventListener("click",async()=>{
     await db.auth.signOut();
-    currentUser=null;
-    selectedFamilyId=null;
-    selectedFamilyName="";
+    currentUser=null;selectedFamilyId=null;selectedFamilyName="";
     showAuth();
   });
 
   async function init(){
     updateLanguage();
     const {data:{session}}=await db.auth.getSession();
-
     if(session?.user){
-      await showDashboard(session.user);
+      if(invitationToken)await acceptInvitationIfPresent(session.user);
+      else await showDashboard(session.user);
     }else{
       showAuth();
     }
 
     db.auth.onAuthStateChange((event,session)=>{
       if(event==="SIGNED_OUT"){
-        currentUser=null;
-        selectedFamilyId=null;
-        selectedFamilyName="";
+        currentUser=null;selectedFamilyId=null;selectedFamilyName="";
         showAuth();
       }else if(event==="SIGNED_IN"&&session?.user){
         currentUser=session.user;
-        showDashboard(session.user);
+        if(invitationToken)acceptInvitationIfPresent(session.user);
+        else showDashboard(session.user);
       }
     });
   }
