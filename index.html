@@ -77,6 +77,14 @@ input:focus,select:focus{border-color:#7668e5;box-shadow:0 0 0 3px #7668e51c}
 .history-status{display:inline-block;margin-top:8px;padding:5px 9px;border-radius:8px;font-size:12px;font-weight:700}
 .history-status.approved{background:#e5f7eb;color:#207442}
 .history-status.rejected{background:#fff0f0;color:#a83232}
+.reward-panel{max-width:900px;margin:0 auto 22px}
+.reward-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
+.reward-form-grid .full{grid-column:1/-1}
+.reward-list{display:grid;gap:11px;margin-top:18px}
+.reward-item{border:1px solid #eceaf3;border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:center;gap:14px}
+.reward-item h4{margin:0 0 6px;font-size:16px}
+.reward-cost{color:#858296;font-size:13px;line-height:1.5}
+@media(max-width:600px){.reward-form-grid{grid-template-columns:1fr}.reward-form-grid .full{grid-column:auto}.reward-item{align-items:flex-start;flex-direction:column}}
 @media(max-width:600px){
 .page{width:min(100% - 22px,1050px);padding-top:17px}
 header{margin-bottom:30px}
@@ -195,6 +203,38 @@ header{margin-bottom:30px}
       <div id="approvalHistoryList" class="approval-list">
         <div class="task-empty">Henter historik...</div>
       </div>
+    </section>
+
+    <section class="card reward-panel" id="rewardManagementCard">
+      <h2 id="rewardManagementTitle">Belønningsstyring</h2>
+      <p class="sub" id="rewardManagementSubtitle">Opret belønninger, som børnene kan spare point og stjerner op til.</p>
+      <form id="rewardForm">
+        <div class="reward-form-grid">
+          <div class="full">
+            <label for="rewardTitle" id="rewardTitleLabel">Belønningens navn</label>
+            <input id="rewardTitle" type="text" maxlength="120" required placeholder="F.eks. Vælg en filmaften">
+          </div>
+          <div class="full">
+            <label for="rewardDescription" id="rewardDescriptionLabel">Beskrivelse (valgfrit)</label>
+            <input id="rewardDescription" type="text" maxlength="500" placeholder="Beskriv belønningen">
+          </div>
+          <div>
+            <label for="rewardPointsCost" id="rewardPointsCostLabel">Pris i point</label>
+            <input id="rewardPointsCost" type="number" min="0" max="100000" step="1" value="50" required>
+          </div>
+          <div>
+            <label for="rewardStarsCost" id="rewardStarsCostLabel">Pris i stjerner</label>
+            <input id="rewardStarsCost" type="number" min="0" max="10000" step="1" value="0" required>
+          </div>
+        </div>
+        <div class="task-hint" id="rewardCostHint">Sæt mindst én pris til mere end 0.</div>
+        <button class="primary" id="createRewardButton" type="submit">Opret belønning</button>
+      </form>
+      <div class="message" id="rewardMessage"></div>
+      <h3 id="rewardListTitle" style="margin:28px 0 0;">Aktive belønninger</h3>
+      <div id="rewardList" class="reward-list"><div class="task-empty">Henter belønninger...</div></div>
+      <h3 id="rewardRequestsTitle" style="margin:28px 0 0;">Børnenes ønsker</h3>
+      <div id="rewardRequestsList" class="reward-list"><div class="task-empty">Henter ønsker...</div></div>
     </section>
 
     <section class="card task-panel" id="taskManagementCard">
@@ -379,7 +419,15 @@ header{margin-bottom:30px}
       approvalApproved:"Godkendt",approvalRejected:"Afvist",
       approvalSuccess:"Opgaven er behandlet.",
       approvalActionError:"Kunne ikke behandle opgaven:",
-      approvalChild:"Barn",approvalReward:"Belønning"
+      approvalChild:"Barn",approvalReward:"Belønning",
+      rewardManagementTitle:"Belønningsstyring",rewardManagementSubtitle:"Opret belønninger, som børnene kan spare point og stjerner op til.",
+      rewardTitle:"Belønningens navn",rewardDescription:"Beskrivelse (valgfrit)",rewardPointsCost:"Pris i point",rewardStarsCost:"Pris i stjerner",
+      rewardCostHint:"Sæt mindst én pris til mere end 0.",createReward:"Opret belønning",rewardList:"Aktive belønninger",rewardRequests:"Børnenes ønsker",
+      rewardSuccess:"Belønningen er oprettet!",rewardError:"Kunne ikke oprette belønningen:",rewardEmpty:"Der er endnu ikke oprettet belønninger.",
+      rewardDeactivate:"Deaktivér",rewardDeactivated:"Belønningen er deaktiveret.",rewardDeactivateError:"Kunne ikke deaktivere belønningen:",
+      rewardRequestEmpty:"Der er ingen ønsker, der afventer godkendelse.",rewardRequestError:"Kunne ikke hente børnenes ønsker:",
+      rewardApprove:"Godkend",rewardReject:"Afvis",rewardApproved:"Godkendt",rewardRejected:"Afvist",rewardReviewError:"Kunne ikke behandle ønsket:",rewardReviewSuccess:"Ønsket er behandlet.",
+      rewardPending:"Afventer",rewardChild:"Barn",rewardCost:"Pris"
     },
     en: {
       heroTitle:"Small tasks. Big achievements.",
@@ -445,7 +493,15 @@ header{margin-bottom:30px}
       approvalApproved:"Approved",approvalRejected:"Rejected",
       approvalSuccess:"The task has been reviewed.",
       approvalActionError:"Could not review the task:",
-      approvalChild:"Child",approvalReward:"Reward"
+      approvalChild:"Child",approvalReward:"Reward",
+      rewardManagementTitle:"Reward management",rewardManagementSubtitle:"Create rewards that children can save points and stars for.",
+      rewardTitle:"Reward name",rewardDescription:"Description (optional)",rewardPointsCost:"Cost in points",rewardStarsCost:"Cost in stars",
+      rewardCostHint:"Set at least one cost above 0.",createReward:"Create reward",rewardList:"Active rewards",rewardRequests:"Children's requests",
+      rewardSuccess:"Reward created!",rewardError:"Could not create reward:",rewardEmpty:"No rewards have been created yet.",
+      rewardDeactivate:"Deactivate",rewardDeactivated:"Reward deactivated.",rewardDeactivateError:"Could not deactivate reward:",
+      rewardRequestEmpty:"There are no reward requests awaiting approval.",rewardRequestError:"Could not load children's requests:",
+      rewardApprove:"Approve",rewardReject:"Reject",rewardApproved:"Approved",rewardRejected:"Rejected",rewardReviewError:"Could not review request:",rewardReviewSuccess:"The request has been reviewed.",
+      rewardPending:"Pending",rewardChild:"Child",rewardCost:"Cost"
     }
   };
 
@@ -495,7 +551,11 @@ header{margin-bottom:30px}
       taskCategoryLabel:"taskCategory",taskApprovalLabel:"taskApproval",
       taskListTitle:"taskList",approvalTitle:"approvalTitle",
       approvalSubtitle:"approvalSubtitle",
-      approvalHistoryTitle:"approvalHistoryTitle"
+      approvalHistoryTitle:"approvalHistoryTitle",
+      rewardManagementTitle:"rewardManagementTitle",rewardManagementSubtitle:"rewardManagementSubtitle",
+      rewardTitleLabel:"rewardTitle",rewardDescriptionLabel:"rewardDescription",
+      rewardPointsCostLabel:"rewardPointsCost",rewardStarsCostLabel:"rewardStarsCost",
+      rewardListTitle:"rewardList",rewardRequestsTitle:"rewardRequests"
     };
 
     Object.entries(ids).forEach(([id,key])=>$(id).textContent=t(key));
@@ -517,6 +577,8 @@ header{margin-bottom:30px}
     $("createChildButton").textContent=t("createChild");
     $("showFamilyForm").textContent=t("createButton");
     $("createTaskButton").textContent=t("createTask");
+    $("createRewardButton").textContent=t("createReward");
+    $("rewardCostHint").textContent=t("rewardCostHint");
 
     if(selectedFamilyName){
       $("selectedFamilyText").textContent=t("selected")+": "+selectedFamilyName;
@@ -606,6 +668,8 @@ header{margin-bottom:30px}
     renderTaskChildChoices();
     await loadTasks();
     await loadApprovals();
+    await loadRewards();
+    await loadRewardRequests();
   }
 
   function renderFamilies(memberships,children){
@@ -952,6 +1016,112 @@ header{margin-bottom:30px}
       rejectButton.disabled=false;
     }
   }
+
+  async function loadRewards(){
+    const list=$("rewardList");
+    list.innerHTML="";
+    if(!selectedFamilyId){list.appendChild(makeTextElement("div",t("noFamilySelected"),"task-empty"));return;}
+    const {data:rewards,error}=await db.from("rewards")
+      .select("id,title,description,points_cost,stars_cost,is_active")
+      .eq("family_id",selectedFamilyId).eq("is_active",true)
+      .order("created_at",{ascending:false});
+    if(error){list.appendChild(makeTextElement("div",t("rewardError")+" "+error.message,"task-empty"));return;}
+    if(!rewards?.length){list.appendChild(makeTextElement("div",t("rewardEmpty"),"task-empty"));return;}
+    rewards.forEach(reward=>{
+      const item=document.createElement("div");item.className="reward-item";
+      const info=document.createElement("div");
+      info.appendChild(makeTextElement("h4",reward.title));
+      if(reward.description)info.appendChild(makeTextElement("div",reward.description,"task-meta"));
+      info.appendChild(makeTextElement("div","✦ "+reward.points_cost+" · ⭐ "+reward.stars_cost,"reward-cost"));
+      const button=document.createElement("button");button.type="button";button.className="secondary";button.textContent=t("rewardDeactivate");
+      button.addEventListener("click",()=>deactivateReward(reward.id,button));
+      item.append(info,button);list.appendChild(item);
+    });
+  }
+
+  async function deactivateReward(rewardId,button){
+    if(!confirm(currentLanguage==="da"?"Vil du deaktivere denne belønning?":"Deactivate this reward?"))return;
+    button.disabled=true;
+    const {error}=await db.from("rewards").update({is_active:false})
+      .eq("id",rewardId).eq("family_id",selectedFamilyId);
+    if(error){setMessage("rewardMessage",t("rewardDeactivateError")+" "+error.message);button.disabled=false;return;}
+    setMessage("rewardMessage",t("rewardDeactivated"),"success");await loadRewards();
+  }
+
+  async function loadRewardRequests(){
+    const list=$("rewardRequestsList");list.innerHTML="";
+    if(!selectedFamilyId){list.appendChild(makeTextElement("div",t("noFamilySelected"),"task-empty"));return;}
+    const {data:rows,error}=await db.from("reward_redemptions")
+      .select("id,reward_id,child_id,status,points_spent,stars_spent,created_at")
+      .eq("family_id",selectedFamilyId).order("created_at",{ascending:false}).limit(100);
+    if(error){list.appendChild(makeTextElement("div",t("rewardRequestError")+" "+error.message,"task-empty"));return;}
+    const pending=(rows||[]).filter(row=>row.status==="pending");
+    if(!pending.length){list.appendChild(makeTextElement("div",t("rewardRequestEmpty"),"task-empty"));return;}
+    const rewardIds=[...new Set(pending.map(x=>x.reward_id))];
+    const childIds=[...new Set(pending.map(x=>x.child_id))];
+    const [{data:rewards,error:rewardError},{data:children,error:childError}]=await Promise.all([
+      db.from("rewards").select("id,title").in("id",rewardIds),
+      db.from("children").select("id,name,avatar_url").in("id",childIds)
+    ]);
+    if(rewardError||childError){list.appendChild(makeTextElement("div",t("rewardRequestError")+" "+(rewardError||childError).message,"task-empty"));return;}
+    const rewardMap=new Map((rewards||[]).map(x=>[x.id,x]));
+    const childMap=new Map((children||[]).map(x=>[x.id,x]));
+    pending.forEach(row=>{
+      const item=document.createElement("div");item.className="reward-item";
+      const info=document.createElement("div");
+      info.appendChild(makeTextElement("h4",rewardMap.get(row.reward_id)?.title||"—"));
+      const child=childMap.get(row.child_id);
+      const childName=child?(child.avatar_url||"🙂")+" "+child.name:t("rewardChild");
+      const date=row.created_at?new Date(row.created_at).toLocaleString(currentLanguage==="da"?"da-DK":"en-GB"):"";
+      info.appendChild(makeTextElement("div",childName+" · "+date,"task-meta"));
+      info.appendChild(makeTextElement("div","✦ "+row.points_spent+" · ⭐ "+row.stars_spent,"reward-cost"));
+      const actions=document.createElement("div");actions.className="approval-actions";
+      const approve=document.createElement("button");approve.type="button";approve.className="approve-button";approve.textContent=t("rewardApprove");
+      const reject=document.createElement("button");reject.type="button";reject.className="reject-button";reject.textContent=t("rewardReject");
+      approve.addEventListener("click",()=>reviewReward(row.id,true,approve,reject));
+      reject.addEventListener("click",()=>reviewReward(row.id,false,approve,reject));
+      actions.append(approve,reject);item.append(info,actions);list.appendChild(item);
+    });
+  }
+
+  async function reviewReward(redemptionId,approve,approveButton,rejectButton){
+    approveButton.disabled=true;rejectButton.disabled=true;clearMessage("rewardMessage");
+    try{
+      const {data,error}=await db.rpc("review_reward_redemption",{
+        p_redemption_id:redemptionId,p_approve:approve
+      });
+      if(error)throw error;
+      if(!data||data.success!==true)throw new Error(data?.message||t("rewardReviewError"));
+      setMessage("rewardMessage",data.message||t("rewardReviewSuccess"),"success");
+      await loadRewardRequests();
+    }catch(error){
+      setMessage("rewardMessage",t("rewardReviewError")+" "+(error.message||""));
+      approveButton.disabled=false;rejectButton.disabled=false;
+    }
+  }
+
+  $("rewardForm").addEventListener("submit",async e=>{
+    e.preventDefault();clearMessage("rewardMessage");
+    if(!selectedFamilyId){setMessage("rewardMessage",t("noFamilySelected"));return;}
+    const title=$("rewardTitle").value.trim();
+    const points=Number($("rewardPointsCost").value);
+    const stars=Number($("rewardStarsCost").value);
+    if(!title||!Number.isInteger(points)||points<0||!Number.isInteger(stars)||stars<0||(points===0&&stars===0)){
+      setMessage("rewardMessage",t("invalid"));return;
+    }
+    const button=$("createRewardButton");button.disabled=true;button.textContent=t("loading");
+    try{
+      const {error}=await db.from("rewards").insert({
+        family_id:selectedFamilyId,title,
+        description:$("rewardDescription").value.trim()||null,
+        image_url:null,points_cost:points,stars_cost:stars,is_active:true
+      });
+      if(error)throw error;
+      $("rewardForm").reset();$("rewardPointsCost").value=50;$("rewardStarsCost").value=0;
+      setMessage("rewardMessage",t("rewardSuccess"),"success");await loadRewards();
+    }catch(error){setMessage("rewardMessage",t("rewardError")+" "+error.message);}
+    finally{button.disabled=false;button.textContent=t("createReward");}
+  });
 
   $("taskSelectionType").addEventListener("change",renderTaskChildChoices);
 
