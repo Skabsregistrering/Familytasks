@@ -152,6 +152,14 @@ button:disabled{
   background:#8992a8;
 }
 
+.reward button{
+  background:#e59b27;
+}
+
+.reward button:disabled{
+  background:#8992a8;
+}
+
 .status{
   margin-top:14px;
   padding:13px;
@@ -192,6 +200,13 @@ button:disabled{
   font-size:13px;
   color:#778099;
 }
+
+.section-intro{
+  color:#68738c;
+  line-height:1.5;
+  margin-top:-8px;
+  margin-bottom:15px;
+}
 </style>
 </head>
 
@@ -226,7 +241,7 @@ button:disabled{
     <div class="card center">
       <div class="avatar" id="avatar">😊</div>
       <h1 id="childName"></h1>
-      <p>Her er dine opgaver!</p>
+      <p>Her er dine opgaver og belønninger!</p>
     </div>
 
     <div class="card">
@@ -248,7 +263,17 @@ button:disabled{
       <div id="taskList"></div>
     </div>
 
-    <button id="refreshButton">Opdater mine opgaver</button>
+    <div class="card">
+      <h2>Mine belønninger 🎁</h2>
+      <p class="section-intro">
+        Brug dine point og stjerner til at ønske dig en belønning!
+      </p>
+      <div id="rewardList"></div>
+    </div>
+
+    <button id="refreshButton">
+      Opdater mine opgaver og belønninger
+    </button>
 
     <br><br>
 
@@ -268,7 +293,7 @@ const SUPABASE_URL =
   "https://bhupbdwybahlkssweiht.supabase.co";
 
 const SUPABASE_KEY =
-  "sb_publishable_kTdbLZD9UmNZ_bsxSUhivQ_8bIOJ-Wa";
+  "sb_publishable_kTdbLZD9UmNZ_bsxSUHivQ_8bIOJ-Wa";
 
 const childId =
   new URLSearchParams(location.search).get("child_id");
@@ -407,6 +432,228 @@ async function submitTask(taskId, button){
   }
 }
 
+async function submitReward(rewardId, button){
+  const token = sessionStorage.getItem(
+    "familytasks_token_" + childId
+  );
+
+  if(!token) return;
+
+  button.disabled = true;
+  button.textContent = "Sender ønske...";
+
+  showPageMessage("");
+
+  try{
+    const result = await callFunction(
+      "child-reward-request",
+      {
+        token:token,
+        reward_id:rewardId
+      }
+    );
+
+    if(!result.success){
+      throw new Error(
+        result.message || "Belønningsønsket kunne ikke sendes."
+      );
+    }
+
+    await loadDashboard(token);
+
+    showPageMessage(
+      result.message || "Dit belønningsønske er sendt!"
+    );
+
+  }catch(error){
+    showPageMessage(error.message);
+
+    button.disabled = false;
+    button.textContent = "🎁 Ønsk denne belønning";
+  }
+}
+
+function renderTasks(tasks){
+  const taskList = document.getElementById("taskList");
+
+  taskList.replaceChildren();
+
+  if(!tasks || tasks.length === 0){
+    const empty = document.createElement("p");
+
+    empty.textContent =
+      "Der er endnu ikke oprettet opgaver til dig 😊";
+
+    taskList.appendChild(empty);
+    return;
+  }
+
+  tasks.forEach(task => {
+    const item = document.createElement("div");
+
+    item.className = "task";
+
+    const media = createTaskMedia(task);
+
+    if(media){
+      item.appendChild(media);
+    }
+
+    const title = document.createElement("div");
+
+    title.className = "task-title";
+    title.textContent = task.title;
+
+    const info = document.createElement("div");
+
+    info.className = "task-info";
+    info.textContent =
+      `⭐ ${task.stars} stjerner · 🏆 ${task.points} point`;
+
+    item.append(title,info);
+
+    if(task.description){
+      const description = document.createElement("p");
+
+      description.className = "task-description";
+      description.textContent = task.description;
+
+      item.appendChild(description);
+    }
+
+    const status = task.completion_status;
+
+    if(status === "pending"){
+      item.appendChild(
+        createStatus(
+          "⏳ Afventer godkendelse fra mor eller far",
+          "status-pending"
+        )
+      );
+
+    }else if(status === "approved" || status === "completed"){
+      item.appendChild(
+        createStatus(
+          "✓ Godkendt – flot klaret!",
+          "status-approved"
+        )
+      );
+
+    }else if(status === "rejected"){
+      item.appendChild(
+        createStatus(
+          "Opgaven er afvist – spørg mor eller far",
+          "status-rejected"
+        )
+      );
+
+    }else{
+      const button = document.createElement("button");
+
+      button.textContent = "Jeg har udført opgaven";
+
+      button.addEventListener("click", () => {
+        submitTask(task.id,button);
+      });
+
+      item.appendChild(button);
+    }
+
+    taskList.appendChild(item);
+  });
+}
+
+function renderRewards(rewards, points, stars){
+  const rewardList = document.getElementById("rewardList");
+
+  rewardList.replaceChildren();
+
+  if(!rewards || rewards.length === 0){
+    const empty = document.createElement("p");
+
+    empty.textContent =
+      "Der er endnu ikke oprettet nogen belønninger 😊";
+
+    rewardList.appendChild(empty);
+    return;
+  }
+
+  rewards.forEach(reward => {
+    const item = document.createElement("div");
+
+    item.className = "task reward";
+
+    const media = createTaskMedia(reward);
+
+    if(media){
+      item.appendChild(media);
+    }
+
+    const title = document.createElement("div");
+
+    title.className = "task-title";
+    title.textContent = reward.title;
+
+    const info = document.createElement("div");
+
+    info.className = "task-info";
+    info.textContent =
+      `🏆 ${reward.points_cost} point · ⭐ ${reward.stars_cost} stjerner`;
+
+    item.append(title,info);
+
+    if(reward.description){
+      const description = document.createElement("p");
+
+      description.className = "task-description";
+      description.textContent = reward.description;
+
+      item.appendChild(description);
+    }
+
+    if(reward.redemption_status === "pending"){
+      item.appendChild(
+        createStatus(
+          "⏳ Dit ønske afventer mor eller far",
+          "status-pending"
+        )
+      );
+
+    }else if(reward.redemption_status === "approved"){
+      item.appendChild(
+        createStatus(
+          "🎉 Godkendt! Spørg mor eller far, hvornår du får din belønning.",
+          "status-approved"
+        )
+      );
+
+    }else{
+      const enoughPoints =
+        Number(points) >= Number(reward.points_cost);
+
+      const enoughStars =
+        Number(stars) >= Number(reward.stars_cost);
+
+      const button = document.createElement("button");
+
+      if(!enoughPoints || !enoughStars){
+        button.disabled = true;
+        button.textContent = "Du mangler point eller stjerner";
+      }else{
+        button.textContent = "🎁 Ønsk denne belønning";
+
+        button.addEventListener("click", () => {
+          submitReward(reward.id,button);
+        });
+      }
+
+      item.appendChild(button);
+    }
+
+    rewardList.appendChild(item);
+  });
+}
+
 async function loadDashboard(token){
   const data = await callFunction(
     "child-dashboard",
@@ -431,94 +678,13 @@ async function loadDashboard(token){
   document.getElementById("points").textContent =
     data.points ?? 0;
 
-  const taskList = document.getElementById("taskList");
+  renderTasks(data.tasks, data.points, data.stars);
 
-  taskList.replaceChildren();
-
-  if(!data.tasks || data.tasks.length === 0){
-    const empty = document.createElement("p");
-
-    empty.textContent =
-      "Der er endnu ikke oprettet opgaver til dig 😊";
-
-    taskList.appendChild(empty);
-
-  }else{
-
-    data.tasks.forEach(task => {
-      const item = document.createElement("div");
-
-      item.className = "task";
-
-      const media = createTaskMedia(task);
-
-      if(media){
-        item.appendChild(media);
-      }
-
-      const title = document.createElement("div");
-
-      title.className = "task-title";
-      title.textContent = task.title;
-
-      const info = document.createElement("div");
-
-      info.className = "task-info";
-      info.textContent =
-        `⭐ ${task.stars} stjerner · 🏆 ${task.points} point`;
-
-      item.append(title,info);
-
-      if(task.description){
-        const description = document.createElement("p");
-
-        description.className = "task-description";
-        description.textContent = task.description;
-
-        item.appendChild(description);
-      }
-
-      const status = task.completion_status;
-
-      if(status === "pending"){
-        item.appendChild(
-          createStatus(
-            "⏳ Afventer godkendelse fra mor eller far",
-            "status-pending"
-          )
-        );
-
-      }else if(status === "approved" || status === "completed"){
-        item.appendChild(
-          createStatus(
-            "✓ Godkendt – flot klaret!",
-            "status-approved"
-          )
-        );
-
-      }else if(status === "rejected"){
-        item.appendChild(
-          createStatus(
-            "Opgaven er afvist – spørg mor eller far",
-            "status-rejected"
-          )
-        );
-
-      }else{
-        const button = document.createElement("button");
-
-        button.textContent = "Jeg har udført opgaven";
-
-        button.addEventListener("click", () => {
-          submitTask(task.id,button);
-        });
-
-        item.appendChild(button);
-      }
-
-      taskList.appendChild(item);
-    });
-  }
+  renderRewards(
+    data.rewards,
+    data.points ?? 0,
+    data.stars ?? 0
+  );
 
   loginCard.classList.add("hidden");
   dashboard.classList.remove("hidden");
